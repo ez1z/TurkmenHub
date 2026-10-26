@@ -80,18 +80,21 @@ export type Database = {
       contacts: {
         Row: {
           profile_id: string
+          share_with_verified: boolean
           telegram: string | null
           updated_at: string
           whatsapp: string | null
         }
         Insert: {
           profile_id: string
+          share_with_verified?: boolean
           telegram?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
         Update: {
           profile_id?: string
+          share_with_verified?: boolean
           telegram?: string | null
           updated_at?: string
           whatsapp?: string | null

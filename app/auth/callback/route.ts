@@ -8,15 +8,16 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
 
   if (!code) {
-    return NextResponse.redirect(new URL("/login?error=oauth", origin));
+    return NextResponse.redirect(new URL("/welcome?error=oauth", origin));
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(new URL("/login?error=oauth", origin));
+    return NextResponse.redirect(new URL("/welcome?error=oauth", origin));
   }
 
+  // The proxy sends the user on to /invite or /onboarding if they need it.
   return NextResponse.redirect(new URL("/", origin));
 }

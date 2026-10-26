@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { io } from "next/cache";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
 
@@ -6,6 +7,10 @@ import type { Database } from "@/types/database";
 // Create a new client per request; never share one across requests.
 export async function createClient() {
   const cookieStore = await cookies();
+  // Supabase auth checks token expiry with Date.now(), which Cache Components
+  // won't allow during prerendering. io() keeps the code that follows out of
+  // the prerender, and resolves right away in actions and route handlers.
+  await io();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

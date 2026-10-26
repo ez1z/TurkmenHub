@@ -52,13 +52,14 @@ New here and want to help? Go to [Contributing](#contributing). You can run the 
 The MVP has 8 screens. Pick an unchecked one if you want something to build.
 
 - [x] Welcome and sign-in
-- [ ] Invite code
-- [ ] Profile setup
+- [x] Invite code
+- [x] Profile setup
 - [ ] Home: list of cities with member counts
 - [ ] City page
 - [ ] Member profile
 - [ ] Report and block
-- [ ] Settings: visibility, contact, language, delete account
+- [x] Settings: profile, visibility, contacts
+- [ ] Settings: language, delete account
 
 ### Sketch of the two main screens (example data)
 
@@ -298,13 +299,17 @@ Never edit a migration that has already been merged. To change something, write 
 ```
 app/                    Next.js App Router pages and routes
   auth/callback/        OAuth callback: exchanges Google's code for a session
-  login/                Sign-in page
+  welcome/              Welcome and sign-in page
+  invite/               Invite code screen (logged-in, unverified users)
+  onboarding/           Profile setup screen (verified users without nickname/city)
 components/             React components
 lib/supabase/
   client.ts             Supabase client for Client Components (browser)
   server.ts             Supabase client for Server Components, Route Handlers, Server Actions
   proxy.ts              Session refresh logic used by the root proxy
 proxy.ts                Next.js 16 "proxy" (used to be middleware): refreshes the session on every request
+                        and routes users: logged out → /welcome, unverified → /invite,
+                        no nickname/city → /onboarding
 supabase/
   config.toml           Local Supabase configuration
   migrations/           The database schema, one SQL file per change
@@ -322,7 +327,7 @@ Another Supabase project is running on your machine. Stop it with `npx supabase 
 **Every page errors with "supabase URL is required" or similar**
 `.env.local` is missing or has the wrong variable names. Check step 4, then restart `npm run dev`.
 
-**Clicking "Continue with Google" sends me back to the login page**
+**Clicking "Continue with Google" sends me back to the welcome page**
 - Make sure you opened the app on port 3000. Local Supabase only redirects back to `http://localhost:3000/auth/callback` or `http://127.0.0.1:3000/auth/callback` (see `[auth]` in `supabase/config.toml`).
 - Check that the redirect URI in Google Cloud is exactly `http://127.0.0.1:54321/auth/v1/callback`.
 - Make sure you restarted Supabase after editing `config.toml`.
