@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "gen:types": "supabase gen types typescript --linked --schema public > types/database.ts"
+    "gen:types": "supabase gen types typescript --linked --schema public > types/database.ts",
+    "prepare": "husky",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
@@ -24,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "husky": "9.1.7",
     "supabase": "2.122.0",
     "tailwindcss": "^4",
     "typescript": "^5"
