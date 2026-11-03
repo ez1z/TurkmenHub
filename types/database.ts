@@ -260,6 +260,8 @@ export type Database = {
       }
     }
     Functions: {
+      delete_account: { Args: never; Returns: undefined }
+      keep_alive: { Args: never; Returns: number }
       redeem_invite: { Args: { invite_code: string }; Returns: undefined }
     }
     Enums: {

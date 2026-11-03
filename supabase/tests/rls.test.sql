@@ -19,7 +19,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(38);
 
 -------------------------------------------------------------------------------
 -- Fixtures
@@ -213,10 +213,93 @@ select is_empty(
 );
 
 -------------------------------------------------------------------------------
--- Signed-out visitors can't redeem
+-- Reports are write-only, and only for verified members
 -------------------------------------------------------------------------------
 
+set local request.jwt.claims to '{"sub":"a0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+
+select lives_ok(
+  $$ insert into public.reports (reported_id, reason, details)
+     values ('b0000000-0000-0000-0000-000000000000', 'spam', 'Selling things') $$,
+  'a verified member can report'
+);
+select throws_ok(
+  'select 1 from public.reports',
+  '42501', null,
+  'reports: members cannot read them back'
+);
+
+set local request.jwt.claims to '{"sub":"90000000-0000-0000-0000-000000000000","role":"authenticated"}';
+
+select throws_ok(
+  $$ insert into public.reports (reported_id, reason)
+     values ('b0000000-0000-0000-0000-000000000000', 'spam') $$,
+  '42501', null,
+  'an unverified user cannot report'
+);
+
+-------------------------------------------------------------------------------
+-- delete_account: nothing that points at the member survives
+-------------------------------------------------------------------------------
+
+-- Alice already reported Bob above. Add a block each way, a report about her,
+-- one of her invite codes and an audit log entry with her email.
 reset role;
+insert into public.blocks (blocker_id, blocked_id) values
+  ('a0000000-0000-0000-0000-000000000000', 'c0000000-0000-0000-0000-000000000000'),
+  ('c0000000-0000-0000-0000-000000000000', 'a0000000-0000-0000-0000-000000000000');
+insert into public.reports (reporter_id, reported_id, reason) values
+  ('b0000000-0000-0000-0000-000000000000', 'a0000000-0000-0000-0000-000000000000', 'fake');
+insert into public.invites (code, created_by) values
+  ('TESTALICE1', 'a0000000-0000-0000-0000-000000000000');
+insert into auth.audit_log_entries (id, payload) values
+  (gen_random_uuid(), '{"action":"login","actor_id":"a0000000-0000-0000-0000-000000000000","actor_username":"alice@test.local"}');
+
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"a0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+
+select lives_ok('select public.delete_account()', 'a member can delete their account');
+
+reset role;
+
+select is_empty(
+  $$ select 1 from auth.users where id = 'a0000000-0000-0000-0000-000000000000' $$,
+  'delete_account: the auth user is gone'
+);
+select is_empty(
+  $$ select 1 from auth.audit_log_entries where payload::text like '%alice%'
+     or payload::text like '%a0000000-0000-0000-0000-000000000000%' $$,
+  'delete_account: their audit log entries are gone'
+);
+-- Every foreign key in public that points at profiles: none may still hold
+-- Alice's id. Catches a future table that forgets ON DELETE CASCADE.
+select is(
+  (select sum(n)::integer from (
+    select (xpath('/row/n/text()', query_to_xml(format(
+      'select count(*) as n from %s where %I = %L',
+      c.conrelid::regclass, a.attname, 'a0000000-0000-0000-0000-000000000000'
+    ), false, true, '')))[1]::text::integer as n
+    from pg_constraint c
+    join pg_attribute a on a.attrelid = c.conrelid and a.attnum = any (c.conkey)
+    where c.contype = 'f' and c.confrelid = 'public.profiles'::regclass
+  ) as refs),
+  0,
+  'delete_account: no row in public references the member'
+);
+select results_eq(
+  $$ select reporter_id, reason from public.reports where reported_id = 'b0000000-0000-0000-0000-000000000000' $$,
+  $$ values (null::uuid, 'spam'::text) $$,
+  'delete_account: reports they filed stay, without saying who filed them'
+);
+select is_empty(
+  $$ select 1 from public.invites where code = 'TESTALICE1' $$,
+  'delete_account: their invite codes are gone'
+);
+
+-------------------------------------------------------------------------------
+-- Signed-out visitors can't redeem or delete, but can keep the project awake
+-------------------------------------------------------------------------------
+
 set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
 
@@ -226,10 +309,16 @@ select throws_ok(
   'anon cannot call redeem_invite'
 );
 select throws_ok(
+  'select public.delete_account()',
+  '42501', null,
+  'anon cannot call delete_account'
+);
+select throws_ok(
   'select 1 from public.city_member_counts',
   '42501', null,
   'anon cannot read member counts'
 );
+select is(public.keep_alive(), 1, 'anon can call keep_alive');
 
 select * from finish();
 rollback;
