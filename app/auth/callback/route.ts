@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { takeReturnTo } from "@/lib/return-to";
 import { createClient } from "@/lib/supabase/server";
 
 // OAuth (PKCE) callback: exchanges the authorization code for a session.
@@ -18,6 +19,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/welcome?error=oauth", origin));
   }
 
-  // The proxy sends the user on to /invite or /onboarding if they need it.
-  return NextResponse.redirect(new URL("/", origin));
+  // Back to the shared link the user opened, if any. If they still have setup
+  // steps left, the proxy sends them on to /invite or /onboarding and
+  // remembers the link again.
+  return NextResponse.redirect(new URL(await takeReturnTo(), origin));
 }
