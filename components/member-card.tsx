@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import ContactButtons, { type Contacts } from "@/components/contact-buttons";
 
@@ -37,7 +38,8 @@ export default function MemberCard({
 }) {
   // Members without a nickname haven't finished onboarding, and the proxy
   // keeps them out of the app, but the column is still nullable.
-  const nickname = member.nickname ?? "Member";
+  const t = useTranslations("member");
+  const nickname = member.nickname ?? t("fallbackName");
 
   return (
     <li className="relative flex flex-col gap-3 rounded-2xl border border-black/[.08] p-4 transition-colors hover:bg-black/[.02] dark:border-white/[.145] dark:hover:bg-white/[.03]">
@@ -51,7 +53,7 @@ export default function MemberCard({
             {nickname}
             {isSelf && (
               <span className="ml-2 text-sm font-normal text-zinc-500">
-                (you)
+                {t("you")}
               </span>
             )}
           </Link>

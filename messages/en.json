@@ -1,0 +1,256 @@
+{
+  "metadata": {
+    "title": "TurkmenHub",
+    "description": "Find Turkmens in your city abroad."
+  },
+  "common": {
+    "back": "Back"
+  },
+  "offline": {
+    "banner": "You're offline. Anything you do will go through when you're back online."
+  },
+  "footer": {
+    "rules": "Rules",
+    "privacy": "Privacy"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "home": {
+    "settings": "Settings",
+    "yourCity": "Your city",
+    "otherCities": "Other cities",
+    "allCities": "All cities",
+    "noCities": "No cities yet.",
+    "memberCount": "{count, plural, one {# member} other {# members}}"
+  },
+  "city": {
+    "allCities": "All cities",
+    "joinGroup": "Join the city group",
+    "newThisWeek": "New this week",
+    "members": "Members",
+    "empty": "No members here yet. Invite someone you know in {city}.",
+    "onlyYou": "You're the only member in {city} so far. Invite someone you know.",
+    "inviteSomeone": "See your invite codes"
+  },
+  "member": {
+    "fallbackName": "Member",
+    "you": "(you)",
+    "noContacts": "{nickname} hasn't shared any contact details.",
+    "self": {
+      "hidden": "This is your profile. It's hidden from other members.",
+      "visibleShared": "This is your profile. Verified members can see it and message you.",
+      "visibleNotShared": "This is your profile. Verified members can see it, but your contacts aren't shared.",
+      "visibleNoContacts": "This is your profile. Verified members can see it, but you haven't added a WhatsApp or Telegram contact.",
+      "edit": "Edit in settings"
+    }
+  },
+  "contacts": {
+    "messageOnWhatsApp": "Message {nickname} on WhatsApp",
+    "messageOnTelegram": "Message {nickname} on Telegram"
+  },
+  "safety": {
+    "report": "Report",
+    "block": "Block",
+    "blockTitle": "Block {nickname}?",
+    "blockBody": "You and {nickname} won't see each other anywhere on TurkmenHub, and they won't be told. This can't be undone in the app yet.",
+    "blocking": "Blocking…",
+    "blockConfirm": "Block",
+    "cancel": "Cancel",
+    "reportTitle": "Report {nickname}",
+    "reportSent": "Thanks. The TurkmenHub team will review your report. They won't be told who sent it.",
+    "close": "Close",
+    "reasonLegend": "What's wrong?",
+    "reasons": {
+      "spam": "Spam or advertising",
+      "harassment": "Harassment or threats",
+      "political": "Political content",
+      "fake": "Fake profile",
+      "other": "Something else"
+    },
+    "detailsLabel": "Details",
+    "optional": "(optional)",
+    "alsoBlock": "Also block {nickname}",
+    "sending": "Sending…",
+    "send": "Send report"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "reasonRequired": "Choose a reason.",
+    "detailsTooLong": "Keep the details under 1,000 characters.",
+    "codeRequired": "Enter your invite code.",
+    "codeInvalid": "We couldn't find that code. Check it for typos and try again.",
+    "codeUnusable": "We couldn't use that code. Check it for typos, or ask for a new one if it's been used.",
+    "codeUsed": "This code has already been used. Each code works once, so ask for a new one.",
+    "confirmRequired": "Tick the box to confirm.",
+    "nicknameMin": "Nickname must be at least 2 characters.",
+    "nicknameMax": "Nickname must be 30 characters or fewer.",
+    "cityRequired": "Choose your city.",
+    "cityNotListed": "Choose a city from the list.",
+    "bioMax": "Bio must be 500 characters or fewer.",
+    "whatsappLeadingZero": "Start with your country code, not 0.",
+    "whatsappInvalid": "Enter your full number with country code.",
+    "telegramInvalid": "Use 5–32 letters, numbers or underscores."
+  },
+  "welcome": {
+    "title": "Sign in",
+    "intro": "TurkmenHub helps Turkmens abroad find each other in their city. It's invite-only.",
+    "oauthError": "Sign-in failed. Please try again.",
+    "deleted": "Your account and everything in it have been deleted.",
+    "sessionExpired": "You were signed out because your session expired. Sign in again to continue.",
+    "redirecting": "Redirecting…",
+    "continueWithGoogle": "Continue with Google"
+  },
+  "invite": {
+    "title": "Enter your invite code",
+    "intro": "TurkmenHub is invite-only. Ask a member for a code.",
+    "codeLabel": "Invite code",
+    "checking": "Checking…",
+    "continue": "Continue",
+    "signOut": "Sign out"
+  },
+  "onboarding": {
+    "title": "Set up your profile",
+    "intro": "Tell other Turkmens who you are and where you live."
+  },
+  "profileForm": {
+    "profile": "Profile",
+    "nickname": "Nickname",
+    "city": "City",
+    "cityHint": "Not listed? Pick the nearest city.",
+    "bio": "Bio",
+    "optional": "(optional)",
+    "bioPlaceholder": "Studying at UM, happy to help newcomers.",
+    "bioHint": "Up to 500 characters.",
+    "visible": "Visible to other members",
+    "visibleHint": "Verified members can find you on your city's page. Only your city is shown, never your exact location.",
+    "contacts": "Contacts",
+    "whatsapp": "WhatsApp number",
+    "whatsappHint": "Country code first, e.g. 60 for Malaysia.",
+    "telegram": "Telegram username",
+    "telegramPlaceholder": "username",
+    "share": "Share with verified members",
+    "shareHint": "Verified members who can see your profile will be able to message you.",
+    "saving": "Saving…",
+    "continue": "Continue",
+    "save": "Save changes",
+    "saved": "Saved."
+  },
+  "cityPicker": {
+    "search": "Search for your city",
+    "noCities": "No cities yet",
+    "listLabel": "Cities",
+    "noMatch": "No city matches “{query}”."
+  },
+  "invites": {
+    "none": "You don't have any invite codes.",
+    "left": "{left} of {total} left. Each code verifies one person, so only share it with someone you know.",
+    "used": "Used",
+    "copyLabel": "Copy invite code {code}",
+    "copied": "Copied",
+    "copy": "Copy"
+  },
+  "settings": {
+    "home": "Home",
+    "title": "Settings",
+    "intro": "Edit your profile and choose who can see you and reach you.",
+    "language": "Language",
+    "invites": "My invites",
+    "account": "Account",
+    "signOut": "Sign out"
+  },
+  "account": {
+    "delete": "Delete account",
+    "deleteTitle": "Delete your account?",
+    "deleteBody": "This removes your profile, contacts, blocks, invite codes and sign-in records right away. It can't be undone.",
+    "deleteKept": "Reports you sent are kept without your name, so the team can still act on them.",
+    "deleteConfirm": "I understand my account and data will be deleted for good.",
+    "deleting": "Deleting…",
+    "deleteButton": "Delete my account",
+    "cancel": "Cancel"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "intro": "TurkmenHub is a small, invite-only directory. Here's what it keeps, who sees it, and how to delete it.",
+    "updated": "Last updated 4 November 2026.",
+    "stored": {
+      "title": "What we store",
+      "items": [
+        "Your Google email address and account ID, only to sign you in. We don't save your Google name or photo.",
+        "Your profile: nickname, city, bio, and whether it's visible.",
+        "Your WhatsApp number and Telegram username, if you add them, and whether you share them.",
+        "Your language, who invited you, and your invite codes.",
+        "The members you block and the reports you send."
+      ]
+    },
+    "seen": {
+      "title": "Who sees it",
+      "items": [
+        "Only verified members, people who joined with an invite code, can see anything. Nothing is public.",
+        "If your profile is visible, verified members can see your nickname, city and bio. Turn visibility off in Settings and you disappear from every list.",
+        "Your WhatsApp and Telegram are shown only if you turn on sharing, and only to members who can see your profile.",
+        "Your email address is never shown to other members.",
+        "Blocking works both ways: you stop seeing each other, and they aren't told.",
+        "Reports are seen only by the TurkmenHub team."
+      ]
+    },
+    "kept": {
+      "title": "Where it's kept",
+      "items": [
+        "The database and sign-in run on Supabase and the app on Vercel. Signing in goes through Google.",
+        "Cookies are used only to keep you signed in, remember your language, and bring you back to a shared link after signing in.",
+        "No ads, no trackers, and your data is never sold."
+      ]
+    },
+    "delete": {
+      "title": "Deleting your data",
+      "items": [
+        "You can change or remove anything in Settings at any time.",
+        "Settings → Delete account removes your account right away: your profile, contacts, blocks, invite codes and sign-in records.",
+        "Reports you sent are kept without your name. The invite code you used stays marked as used, so nobody can reuse it."
+      ]
+    }
+  },
+  "rules": {
+    "title": "Community rules",
+    "intro": "TurkmenHub is for Turkmens abroad to find and help each other. These rules keep it safe for everyone.",
+    "updated": "Last updated 4 November 2026.",
+    "political": {
+      "title": "No political content",
+      "items": [
+        "Don't post or share political content: not in your nickname, your bio, or the city groups.",
+        "This protects members and their families. Profiles with political content are removed."
+      ]
+    },
+    "people": {
+      "title": "Be a good neighbour",
+      "items": [
+        "Be kind. No harassment, threats or hate.",
+        "Be yourself. No fake profiles, and don't pretend to be someone else.",
+        "No spam, ads or selling.",
+        "Don't share other members' numbers, usernames or screenshots outside TurkmenHub without their permission."
+      ]
+    },
+    "safety": {
+      "title": "Invites and reports",
+      "items": [
+        "Only give your invite codes to people you know and trust. You're responsible for who you invite.",
+        "If someone breaks these rules, open their profile and tap Report. You can block anyone at any time.",
+        "Members who break the rules lose access."
+      ]
+    }
+  },
+  "notFound": {
+    "title": "Not found",
+    "body": "This link may be old, or the page isn't available to you.",
+    "home": "Go home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "This page couldn't load. Please try again.",
+    "offlineTitle": "You're offline",
+    "offlineBody": "Check your connection. The page will load when you're back online.",
+    "retry": "Try again",
+    "home": "Go home"
+  }
+}

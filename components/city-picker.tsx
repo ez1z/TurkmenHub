@@ -1,6 +1,8 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useRef, useState } from "react";
+import { cityName } from "@/lib/city-name";
 
 export type City = {
   id: number;
@@ -43,36 +45,41 @@ export default function CityPicker({
   describedBy?: string;
   className: string;
 }) {
+  const t = useTranslations("cityPicker");
+  const locale = useLocale();
+  const label = (city: City | null) => (city ? cityName(city, locale) : "");
   const listId = useId();
   const listRef = useRef<HTMLUListElement>(null);
   const [selected, setSelected] = useState(
     () => cities.find((city) => String(city.id) === defaultValue) ?? null,
   );
-  const [query, setQuery] = useState(selected?.name_en ?? "");
+  const selectedLabel = label(selected);
+  const [query, setQuery] = useState(selectedLabel);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
 
   const matches = useMemo(() => {
     // Show every city while the field still shows the picked one.
-    if (!query || query === selected?.name_en) {
+    if (!query || query === selectedLabel) {
       return cities;
     }
+    // Either spelling finds a city, whatever language the page is in.
     const needle = fold(query.trim());
     return cities.filter(
       (city) =>
         fold(city.name_en).includes(needle) ||
         fold(city.name_tk).includes(needle),
     );
-  }, [cities, query, selected]);
+  }, [cities, query, selectedLabel]);
 
   function pick(city: City) {
     setSelected(city);
-    setQuery(city.name_en);
+    setQuery(label(city));
     setOpen(false);
   }
 
   function close() {
-    setQuery(selected?.name_en ?? "");
+    setQuery(selectedLabel);
     setOpen(false);
   }
 
@@ -115,7 +122,7 @@ export default function CityPicker({
         spellCheck={false}
         value={query}
         disabled={!cities.length}
-        placeholder={cities.length ? "Search for your city" : "No cities yet"}
+        placeholder={cities.length ? t("search") : t("noCities")}
         aria-expanded={showList}
         aria-controls={listId}
         aria-autocomplete="list"
@@ -142,7 +149,7 @@ export default function CityPicker({
         ref={listRef}
         id={listId}
         role="listbox"
-        aria-label="Cities"
+        aria-label={t("listLabel")}
         hidden={!showList || !matches.length}
         className={`${popupClass} max-h-60 overflow-y-auto py-1`}
       >
@@ -164,7 +171,7 @@ export default function CityPicker({
             }`}
           >
             <span className={city.id === selected?.id ? "font-medium" : ""}>
-              {city.name_en}
+              {label(city)}
             </span>
             <span className="text-xs text-zinc-500">{city.country_code}</span>
           </li>
@@ -172,7 +179,7 @@ export default function CityPicker({
       </ul>
       {showList && !matches.length && (
         <p className={`${popupClass} px-4 py-2.5 text-sm text-zinc-500`}>
-          No city matches &ldquo;{query.trim()}&rdquo;.
+          {t("noMatch", { query: query.trim() })}
         </p>
       )}
     </div>

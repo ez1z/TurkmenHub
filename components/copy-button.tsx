@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { outlineButtonClass } from "@/lib/styles";
 
@@ -10,6 +11,7 @@ export default function CopyButton({
   text: string;
   label: string;
 }) {
+  const t = useTranslations("invites");
   const [copied, setCopied] = useState(false);
   // Each copy restarts the 2s "Copied" window, so a second click doesn't get
   // reset early by the first click's timer.
@@ -35,7 +37,7 @@ export default function CopyButton({
       aria-label={label}
       className={`h-8 px-3 ${outlineButtonClass}`}
     >
-      <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+      <span aria-live="polite">{copied ? t("copied") : t("copy")}</span>
     </button>
   );
 }

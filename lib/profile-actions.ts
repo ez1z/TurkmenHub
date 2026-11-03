@@ -1,7 +1,9 @@
 "use server";
 
+import { hasLocale } from "next-intl";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { routing, type Locale } from "@/i18n/routing";
 import { takeReturnTo } from "@/lib/return-to";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -19,8 +21,13 @@ export type ProfileFormState = {
   values: ProfileFormValues;
 };
 
-// Validates the form and writes it to profiles and contacts.
-async function save(formData: FormData): Promise<ProfileFormState> {
+// Validates the form and writes it to profiles and contacts. Onboarding also
+// stores the language the member is using, so a sign-in on another device
+// starts in it (see /auth/callback).
+async function save(
+  formData: FormData,
+  locale?: Locale,
+): Promise<ProfileFormState> {
   const values = {
     nickname: String(formData.get("nickname") ?? ""),
     city_id: String(formData.get("city_id") ?? ""),
@@ -57,7 +64,7 @@ async function save(formData: FormData): Promise<ProfileFormState> {
   const [profile, contacts] = await Promise.all([
     supabase
       .from("profiles")
-      .update({ nickname, city_id, bio, is_visible })
+      .update({ nickname, city_id, bio, is_visible, ...(locale && { locale }) })
       .eq("id", userId),
     supabase
       .from("contacts")
@@ -68,14 +75,14 @@ async function save(formData: FormData): Promise<ProfileFormState> {
   if (profile.error?.code === "23503") {
     return {
       error: "",
-      fieldErrors: { city_id: ["Choose a city from the list."] },
+      fieldErrors: { city_id: ["cityNotListed"] },
       saved: false,
       values,
     };
   }
   if (profile.error || contacts.error) {
     return {
-      error: "Something went wrong. Please try again.",
+      error: "generic",
       fieldErrors: {},
       saved: false,
       values,
@@ -103,7 +110,13 @@ export async function completeOnboarding(
   _prevState: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
-  const state = await save(formData);
+  // The language the form was shown in, whether it came from the cookie or
+  // the browser's settings.
+  const locale = String(formData.get("locale") ?? "");
+  const state = await save(
+    formData,
+    hasLocale(routing.locales, locale) ? locale : undefined,
+  );
   if (state.saved) {
     redirect(await takeReturnTo());
   }

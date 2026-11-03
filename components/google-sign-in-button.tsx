@@ -1,15 +1,18 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { errorTextClass, primaryButtonClass } from "@/lib/styles";
 
 export default function GoogleSignInButton() {
+  const t = useTranslations("welcome");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [failed, setFailed] = useState(false);
 
   async function signIn() {
     setLoading(true);
-    setError("");
+    setFailed(false);
 
     const supabase = createClient();
 
@@ -22,7 +25,7 @@ export default function GoogleSignInButton() {
     });
 
     if (error) {
-      setError(error.message);
+      setFailed(true);
       setLoading(false);
     }
   }
@@ -33,14 +36,14 @@ export default function GoogleSignInButton() {
         type="button"
         onClick={signIn}
         disabled={loading}
-        className="flex h-12 w-full items-center justify-center rounded-full bg-foreground px-5 font-medium text-background transition-colors hover:bg-[#383838] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-[#ccc]"
+        className={primaryButtonClass}
       >
-        {loading ? "Redirecting..." : "Continue with Google"}
+        {loading ? t("redirecting") : t("continueWithGoogle")}
       </button>
 
-      {error && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-          {error}
+      {failed && (
+        <p role="alert" className={errorTextClass}>
+          {t("oauthError")}
         </p>
       )}
     </div>

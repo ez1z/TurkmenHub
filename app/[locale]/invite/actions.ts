@@ -7,8 +7,12 @@ import { createClient } from "@/lib/supabase/server";
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 // code is echoed back so a failed attempt keeps what the user typed (React
-// resets an uncontrolled form after its action runs).
-export type InviteState = { error: string; code: string };
+// resets an uncontrolled form after its action runs). error is a key in the
+// "errors" messages, which the form translates.
+export type InviteState = {
+  error: "" | "codeRequired" | "codeInvalid" | "codeUnusable" | "codeUsed" | "generic";
+  code: string;
+};
 
 // Verified now, so the next step is onboarding, unless the profile is already
 // filled in (a member who lost verification and got a new code). Redirect
@@ -38,7 +42,7 @@ export async function redeemInvite(
   const code = String(formData.get("code") ?? "").replace(/[\s-]/g, "");
 
   if (!code) {
-    return { error: "Enter your invite code.", code };
+    return { error: "codeRequired", code };
   }
 
   const supabase = await createClient();
@@ -52,27 +56,16 @@ export async function redeemInvite(
       case "Not signed in":
         redirect("/welcome");
       case "Invalid invite code":
-        return {
-          error: "We couldn't find that code. Check it for typos and try again.",
-          code,
-        };
+        return { error: "codeInvalid", code };
       // Raised by redeem_invite before migration 20261026074341, which split
       // it into the two cases around it. Kept so the app still explains a bad
       // code if it ships before that migration reaches the database.
       case "Invalid or already used invite code":
-        return {
-          error:
-            "We couldn't use that code. Check it for typos, or ask for a new one if it's been used.",
-          code,
-        };
+        return { error: "codeUnusable", code };
       case "Invite code already used":
-        return {
-          error:
-            "This code has already been used. Each code works once, so ask for a new one.",
-          code,
-        };
+        return { error: "codeUsed", code };
       default:
-        return { error: "Something went wrong. Please try again.", code };
+        return { error: "generic", code };
     }
   }
 

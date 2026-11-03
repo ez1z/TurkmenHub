@@ -1,16 +1,17 @@
+import { useTranslations } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
 import PageShell from "@/components/page-shell";
+import { cityName } from "@/lib/city-name";
 import { sectionLabelClass, textLinkClass } from "@/lib/styles";
 import { createClient } from "@/lib/supabase/server";
 
-type CityRow = { slug: string; name_en: string; member_count: number };
-
-function memberCount(count: number) {
-  return count === 1 ? "1 member" : `${count} members`;
-}
+type CityRow = { slug: string; name: string; member_count: number };
 
 function CityLink({ city }: { city: CityRow }) {
+  const t = useTranslations("home");
+
   return (
     <li>
       <Link
@@ -18,10 +19,10 @@ function CityLink({ city }: { city: CityRow }) {
         className="flex h-14 items-center justify-between gap-3 px-4 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.04]"
       >
         <span className="font-medium text-black dark:text-zinc-50">
-          {city.name_en}
+          {city.name}
         </span>
         <span className="flex items-center gap-2 text-sm text-zinc-500">
-          {memberCount(city.member_count)}
+          {t("memberCount", { count: city.member_count })}
           <span aria-hidden="true">›</span>
         </span>
       </Link>
@@ -43,6 +44,7 @@ function CityGroup({ cities }: { cities: CityRow[] }) {
 // each number matches what that city page shows them.
 async function Cities() {
   const supabase = await createClient();
+  const [t, locale] = await Promise.all([getTranslations("home"), getLocale()]);
 
   // The counts don't depend on who's asking (beyond RLS), so they load while
   // getClaims() works out whose city to pin.
@@ -56,9 +58,9 @@ async function Cities() {
   const [{ data: rows }, { data: profile }] = await Promise.all([
     supabase
       .from("city_member_counts")
-      .select("id, slug, name_en, member_count")
+      .select("id, slug, name_en, name_tk, member_count")
       .order("member_count", { ascending: false })
-      .order("name_en"),
+      .order(locale === "tk" ? "name_tk" : "name_en"),
     ownProfile,
   ]);
 
@@ -66,7 +68,7 @@ async function Cities() {
   const cities = (rows ?? []).map((row) => ({
     id: row.id!,
     slug: row.slug!,
-    name_en: row.name_en!,
+    name: cityName({ name_en: row.name_en!, name_tk: row.name_tk! }, locale),
     member_count: row.member_count ?? 0,
   }));
   const ownCity = cities.find((city) => city.id === profile?.city_id);
@@ -74,9 +76,7 @@ async function Cities() {
 
   if (!cities.length) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        No cities yet.
-      </p>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("noCities")}</p>
     );
   }
 
@@ -85,7 +85,7 @@ async function Cities() {
       {ownCity && (
         <section aria-labelledby="your-city" className="flex flex-col gap-2">
           <h2 id="your-city" className={sectionLabelClass}>
-            Your city
+            {t("yourCity")}
           </h2>
           <CityGroup cities={[ownCity]} />
         </section>
@@ -93,7 +93,7 @@ async function Cities() {
       {otherCities.length > 0 && (
         <section aria-labelledby="all-cities" className="flex flex-col gap-2">
           <h2 id="all-cities" className={sectionLabelClass}>
-            {ownCity ? "Other cities" : "All cities"}
+            {ownCity ? t("otherCities") : t("allCities")}
           </h2>
           <CityGroup cities={otherCities} />
         </section>
@@ -104,6 +104,8 @@ async function Cities() {
 
 // Only members with a finished profile get here (see proxy.ts).
 export default function Home() {
+  const t = useTranslations("home");
+
   return (
     <PageShell>
       <header className="flex items-center justify-between">
@@ -111,7 +113,7 @@ export default function Home() {
           TurkmenHub
         </h1>
         <Link href="/settings" className={textLinkClass}>
-          Settings
+          {t("settings")}
         </Link>
       </header>
       <Suspense

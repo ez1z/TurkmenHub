@@ -1,9 +1,12 @@
+import { useTranslations } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import MemberCard from "@/components/member-card";
 import PageShell from "@/components/page-shell";
-import { sectionLabelClass, textLinkClass } from "@/lib/styles";
+import { cityName } from "@/lib/city-name";
+import { primaryButtonClass, sectionLabelClass, textLinkClass } from "@/lib/styles";
 import { createClient } from "@/lib/supabase/server";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -25,7 +28,7 @@ async function loadCity(slug: string) {
       supabase.auth.getClaims(),
       supabase
         .from("city_member_counts")
-        .select("id, name_en, group_url, member_count")
+        .select("id, name_en, name_tk, group_url, member_count")
         .eq("slug", slug)
         .maybeSingle(),
       supabase
@@ -61,21 +64,28 @@ async function loadCity(slug: string) {
 // params is request-time data (cities aren't prerendered), so the page reads
 // it inside Suspense while the rest stays in the prerendered shell. That also
 // means notFound() here can only send a 200; the proxy sends the real 404.
-async function City({ params }: { params: PageProps<"/city/[slug]">["params"] }) {
+async function City({ params }: { params: PageProps<"/[locale]/city/[slug]">["params"] }) {
   const { slug } = await params;
-  const data = await loadCity(slug);
+  const [data, t, locale] = await Promise.all([
+    loadCity(slug),
+    getTranslations("city"),
+    getLocale(),
+  ]);
 
   if (!data) {
     notFound();
   }
 
   const { city, members, newThisWeek, userId } = data;
+  const name = cityName({ name_en: city.name_en!, name_tk: city.name_tk! }, locale);
+  // Only you, or nobody you can see yet.
+  const onlyYou = members.length === 1 && members[0].id === userId;
 
   return (
     <>
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {city.name_en}
+          {name}
           <span className="font-normal text-zinc-500">
             {" "}
             · {city.member_count ?? 0}
@@ -86,9 +96,9 @@ async function City({ params }: { params: PageProps<"/city/[slug]">["params"] })
             href={city.group_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-12 w-full items-center justify-center rounded-full bg-foreground px-5 font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+            className={primaryButtonClass}
           >
-            Join the city group
+            {t("joinGroup")}
           </a>
         )}
       </div>
@@ -96,7 +106,7 @@ async function City({ params }: { params: PageProps<"/city/[slug]">["params"] })
       {newThisWeek.length > 0 && (
         <section aria-labelledby="new-this-week" className="flex flex-col gap-2">
           <h2 id="new-this-week" className={sectionLabelClass}>
-            New this week
+            {t("newThisWeek")}
           </h2>
           <ul className="flex flex-col gap-2">
             {newThisWeek.map((member) => (
@@ -112,9 +122,9 @@ async function City({ params }: { params: PageProps<"/city/[slug]">["params"] })
 
       <section aria-labelledby="members" className="flex flex-col gap-2">
         <h2 id="members" className={sectionLabelClass}>
-          Members
+          {t("members")}
         </h2>
-        {members.length ? (
+        {members.length > 0 && (
           <ul className="flex flex-col gap-2">
             {members.map((member) => (
               <MemberCard
@@ -124,10 +134,14 @@ async function City({ params }: { params: PageProps<"/city/[slug]">["params"] })
               />
             ))}
           </ul>
-        ) : (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            No members here yet. Invite someone you know in {city.name_en}.
-          </p>
+        )}
+        {(members.length === 0 || onlyYou) && (
+          <div className="flex flex-col gap-2 rounded-xl bg-zinc-100 p-4 text-sm text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+            <p>{onlyYou ? t("onlyYou", { city: name }) : t("empty", { city: name })}</p>
+            <Link href="/settings#my-invites" className="font-medium underline">
+              {t("inviteSomeone")}
+            </Link>
+          </div>
         )}
       </section>
     </>
@@ -136,11 +150,13 @@ async function City({ params }: { params: PageProps<"/city/[slug]">["params"] })
 
 // Shareable: a signed-out visitor is sent to sign in and brought back here
 // (see lib/return-to.ts).
-export default function CityPage({ params }: PageProps<"/city/[slug]">) {
+export default function CityPage({ params }: PageProps<"/[locale]/city/[slug]">) {
+  const t = useTranslations("city");
+
   return (
     <PageShell>
       <Link href="/" className={textLinkClass}>
-        ← All cities
+        ← {t("allCities")}
       </Link>
       <Suspense
         fallback={

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import CopyButton from "@/components/copy-button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -6,7 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 // <Suspense>.
 export default async function MyInvites() {
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
+  const [t, { data: claims }] = await Promise.all([
+    getTranslations("invites"),
+    supabase.auth.getClaims(),
+  ]);
   const userId = claims?.claims.sub ?? "";
 
   const { data: invites } = await supabase
@@ -18,9 +22,7 @@ export default async function MyInvites() {
 
   if (!invites?.length) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        You don&apos;t have any invite codes.
-      </p>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("none")}</p>
     );
   }
 
@@ -29,8 +31,7 @@ export default async function MyInvites() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        {left} of {invites.length} left. Each code verifies one person, so only
-        share it with someone you know.
+        {t("left", { left, total: invites.length })}
       </p>
       <ul className="flex flex-col divide-y divide-black/[.08] rounded-xl border border-black/[.08] dark:divide-white/[.145] dark:border-white/[.145]">
         {invites.map((invite) => (
@@ -48,11 +49,11 @@ export default async function MyInvites() {
               {invite.code}
             </span>
             {invite.used_at ? (
-              <span className="text-sm text-zinc-500">Used</span>
+              <span className="text-sm text-zinc-500">{t("used")}</span>
             ) : (
               <CopyButton
                 text={invite.code}
-                label={`Copy invite code ${invite.code}`}
+                label={t("copyLabel", { code: invite.code })}
               />
             )}
           </li>

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { outlineButtonClass } from "@/lib/styles";
 
 export type Contacts = {
@@ -20,6 +21,8 @@ export default function ContactButtons({
   contacts: Contacts;
   className?: string;
 }) {
+  const t = useTranslations("contacts");
+
   if (!contacts?.whatsapp && !contacts?.telegram) {
     return null;
   }
@@ -31,7 +34,7 @@ export default function ContactButtons({
           href={`https://wa.me/${contacts.whatsapp}`}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Message ${nickname} on WhatsApp`}
+          aria-label={t("messageOnWhatsApp", { nickname })}
           className={buttonClass}
         >
           WhatsApp
@@ -42,7 +45,7 @@ export default function ContactButtons({
           href={`https://t.me/${contacts.telegram}`}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Message ${nickname} on Telegram`}
+          aria-label={t("messageOnTelegram", { nickname })}
           className={buttonClass}
         >
           Telegram

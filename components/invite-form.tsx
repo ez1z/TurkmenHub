@@ -1,11 +1,15 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
-import { redeemInvite, type InviteState } from "@/app/invite/actions";
+import { redeemInvite, type InviteState } from "@/app/[locale]/invite/actions";
+import { errorTextClass, primaryButtonClass } from "@/lib/styles";
 
 const initialState: InviteState = { error: "", code: "" };
 
 export default function InviteForm() {
+  const t = useTranslations("invite");
+  const tErrors = useTranslations("errors");
   const [state, formAction, pending] = useActionState(
     redeemInvite,
     initialState,
@@ -17,7 +21,7 @@ export default function InviteForm() {
         htmlFor="code"
         className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
       >
-        Invite code
+        {t("codeLabel")}
       </label>
       <input
         id="code"
@@ -37,21 +41,13 @@ export default function InviteForm() {
       />
 
       {state.error && (
-        <p
-          id="code-error"
-          role="alert"
-          className="text-sm text-red-600 dark:text-red-400"
-        >
-          {state.error}
+        <p id="code-error" role="alert" className={errorTextClass}>
+          {tErrors(state.error)}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex h-12 w-full items-center justify-center rounded-full bg-foreground px-5 font-medium text-background transition-colors hover:bg-[#383838] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-[#ccc]"
-      >
-        {pending ? "Checking..." : "Continue"}
+      <button type="submit" disabled={pending} className={primaryButtonClass}>
+        {pending ? t("checking") : t("continue")}
       </button>
     </form>
   );

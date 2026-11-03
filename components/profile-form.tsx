@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useActionState } from "react";
 import CityPicker, { type City } from "@/components/city-picker";
 import {
@@ -7,13 +8,14 @@ import {
   updateSettings,
   type ProfileFormState,
 } from "@/lib/profile-actions";
+import type { ErrorKey } from "@/lib/error-key";
 import type { ProfileFieldErrors, ProfileFormValues } from "@/lib/profile-schema";
+import { errorTextClass, primaryButtonClass } from "@/lib/styles";
 
 const labelClass = "text-sm font-medium text-zinc-700 dark:text-zinc-300";
 const hintClass = "text-sm text-zinc-500";
 const fieldClass =
   "w-full rounded-xl border border-black/[.08] bg-transparent px-4 text-black placeholder:text-zinc-400 focus:border-foreground focus:outline-none aria-invalid:border-red-600 disabled:opacity-60 dark:border-white/[.145] dark:text-zinc-50 dark:aria-invalid:border-red-400";
-const errorClass = "text-sm text-red-600 dark:text-red-400";
 const legendClass = "mb-1 text-base font-semibold text-black dark:text-zinc-50";
 
 // The id of the message under a field: its error if it has one, else its hint.
@@ -37,10 +39,13 @@ function FieldMessage({
   fieldErrors: ProfileFieldErrors;
   hint?: string;
 }) {
+  const tErrors = useTranslations("errors");
+
   if (fieldErrors[name]) {
+    // The schema's messages are keys in "errors" (see lib/profile-schema.ts).
     return (
-      <p id={`${name}-error`} className={errorClass}>
-        {fieldErrors[name][0]}
+      <p id={`${name}-error`} className={errorTextClass}>
+        {tErrors(fieldErrors[name][0] as ErrorKey)}
       </p>
     );
   }
@@ -98,6 +103,9 @@ export default function ProfileForm({
   cities: City[];
   initialValues: ProfileFormValues;
 }) {
+  const t = useTranslations("profileForm");
+  const tErrors = useTranslations("errors");
+  const locale = useLocale();
   const [state, formAction, pending] = useActionState(
     mode === "onboarding" ? completeOnboarding : updateSettings,
     { error: "", fieldErrors: {}, saved: false, values: initialValues } satisfies ProfileFormState,
@@ -106,12 +114,15 @@ export default function ProfileForm({
 
   return (
     <form action={formAction} noValidate className="flex flex-col gap-8">
+      {/* Onboarding saves it as the member's language. */}
+      <input type="hidden" name="locale" value={locale} />
+
       <fieldset className="flex flex-col gap-5">
-        <legend className={legendClass}>Profile</legend>
+        <legend className={legendClass}>{t("profile")}</legend>
 
         <div className="flex flex-col gap-2">
           <label htmlFor="nickname" className={labelClass}>
-            Nickname
+            {t("nickname")}
           </label>
           <input
             id="nickname"
@@ -132,7 +143,7 @@ export default function ProfileForm({
 
         <div className="flex flex-col gap-2">
           <label htmlFor="city" className={labelClass}>
-            City
+            {t("city")}
           </label>
           <CityPicker
             id="city"
@@ -146,13 +157,13 @@ export default function ProfileForm({
           <FieldMessage
             name="city_id"
             fieldErrors={fieldErrors}
-            hint="Not listed? Pick the nearest city."
+            hint={t("cityHint")}
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor="bio" className={labelClass}>
-            Bio <span className="font-normal text-zinc-500">(optional)</span>
+            {t("bio")} <span className="font-normal text-zinc-500">{t("optional")}</span>
           </label>
           <textarea
             id="bio"
@@ -160,7 +171,7 @@ export default function ProfileForm({
             rows={4}
             maxLength={500}
             defaultValue={values.bio}
-            placeholder="Studying at UM, happy to help newcomers."
+            placeholder={t("bioPlaceholder")}
             aria-invalid={fieldErrors.bio ? true : undefined}
             aria-describedby={describedBy("bio", fieldErrors, true)}
             className={`resize-none py-3 ${fieldClass}`}
@@ -168,27 +179,27 @@ export default function ProfileForm({
           <FieldMessage
             name="bio"
             fieldErrors={fieldErrors}
-            hint="Up to 500 characters."
+            hint={t("bioHint")}
           />
         </div>
 
         <Switch
           name="is_visible"
-          label="Visible to other members"
-          hint="Members in your city can find you. Only your city is shown, never your exact location."
+          label={t("visible")}
+          hint={t("visibleHint")}
           defaultChecked={values.is_visible}
         />
       </fieldset>
 
       <fieldset className="flex flex-col gap-5">
         <legend className={legendClass}>
-          Contacts{" "}
-          <span className="text-sm font-normal text-zinc-500">(optional)</span>
+          {t("contacts")}{" "}
+          <span className="text-sm font-normal text-zinc-500">{t("optional")}</span>
         </legend>
 
         <div className="flex flex-col gap-2">
           <label htmlFor="whatsapp" className={labelClass}>
-            WhatsApp number
+            {t("whatsapp")}
           </label>
           <div className="relative">
             <span
@@ -213,13 +224,13 @@ export default function ProfileForm({
           <FieldMessage
             name="whatsapp"
             fieldErrors={fieldErrors}
-            hint="Country code first, e.g. 60 for Malaysia."
+            hint={t("whatsappHint")}
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor="telegram" className={labelClass}>
-            Telegram username
+            {t("telegram")}
           </label>
           <div className="relative">
             <span
@@ -237,7 +248,7 @@ export default function ProfileForm({
               spellCheck={false}
               maxLength={64}
               defaultValue={values.telegram}
-              placeholder="username"
+              placeholder={t("telegramPlaceholder")}
               aria-invalid={fieldErrors.telegram ? true : undefined}
               aria-describedby={describedBy("telegram", fieldErrors)}
               className={`h-12 pl-9 ${fieldClass}`}
@@ -248,15 +259,15 @@ export default function ProfileForm({
 
         <Switch
           name="share_with_verified"
-          label="Share with verified members"
-          hint="Verified members who can see your profile will be able to message you."
+          label={t("share")}
+          hint={t("shareHint")}
           defaultChecked={values.share_with_verified}
         />
       </fieldset>
 
       {state.error && (
-        <p role="alert" className={errorClass}>
-          {state.error}
+        <p role="alert" className={errorTextClass}>
+          {tErrors(state.error as ErrorKey)}
         </p>
       )}
 
@@ -264,13 +275,13 @@ export default function ProfileForm({
         <button
           type="submit"
           disabled={pending || !cities.length}
-          className="flex h-12 w-full items-center justify-center rounded-full bg-foreground px-5 font-medium text-background transition-colors hover:bg-[#383838] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-[#ccc]"
+          className={primaryButtonClass}
         >
-          {pending ? "Saving..." : mode === "onboarding" ? "Continue" : "Save changes"}
+          {pending ? t("saving") : mode === "onboarding" ? t("continue") : t("save")}
         </button>
         {/* Cleared while the next save is in flight. */}
         <p role="status" className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-          {state.saved && !pending ? "Saved." : ""}
+          {state.saved && !pending ? t("saved") : ""}
         </p>
       </div>
     </form>

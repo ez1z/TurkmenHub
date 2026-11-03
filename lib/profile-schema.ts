@@ -1,22 +1,23 @@
 import { z } from "zod";
 
 // Mirrors the check constraints on public.profiles, so bad input gets a
-// friendly message here instead of a constraint error from Postgres.
+// friendly message here instead of a constraint error from Postgres. Error
+// messages are keys in the "errors" messages; the form translates them.
 export const profileSchema = z.object({
   nickname: z
     .string()
     .trim()
-    .min(2, { error: "Nickname must be at least 2 characters." })
-    .max(30, { error: "Nickname must be 30 characters or fewer." }),
+    .min(2, { error: "nicknameMin" })
+    .max(30, { error: "nicknameMax" }),
   // The city picker sends "" when nothing is chosen, which coerces to 0.
   city_id: z.coerce
-    .number({ error: "Choose your city." })
+    .number({ error: "cityRequired" })
     .int()
-    .positive({ error: "Choose your city." }),
+    .positive({ error: "cityRequired" }),
   bio: z
     .string()
     .trim()
-    .max(500, { error: "Bio must be 500 characters or fewer." })
+    .max(500, { error: "bioMax" })
     .transform((bio) => bio || null),
   is_visible: z.boolean(),
 });
@@ -30,11 +31,11 @@ export const contactSchema = z.object({
     .string()
     .transform((number) => number.replace(/\D/g, ""))
     .refine((number) => !number.startsWith("0"), {
-      error: "Start with your country code, not 0.",
+      error: "whatsappLeadingZero",
       abort: true,
     })
     .refine((number) => !number || /^[1-9][0-9]{6,14}$/.test(number), {
-      error: "Enter your full number with country code.",
+      error: "whatsappInvalid",
     })
     .transform((number) => number || null),
   // Accept "@name" and t.me links as well, since that's how people copy it.
@@ -45,7 +46,7 @@ export const contactSchema = z.object({
       username.replace(/^(https?:\/\/)?(t\.me\/|telegram\.me\/)/i, "").replace(/^@/, ""),
     )
     .refine((username) => !username || /^[A-Za-z0-9_]{5,32}$/.test(username), {
-      error: "Use 5–32 letters, numbers or underscores.",
+      error: "telegramInvalid",
     })
     .transform((username) => username || null),
   share_with_verified: z.boolean(),

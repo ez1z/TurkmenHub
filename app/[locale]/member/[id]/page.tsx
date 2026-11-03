@@ -1,11 +1,15 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import ContactButtons from "@/components/contact-buttons";
 import { Avatar } from "@/components/member-card";
 import PageShell from "@/components/page-shell";
+import SafetyActions from "@/components/safety-actions";
+import { cityName } from "@/lib/city-name";
 import { textLinkClass } from "@/lib/styles";
 import { createClient } from "@/lib/supabase/server";
+import { blockMember, reportMember } from "./actions";
 
 // Postgres rejects a malformed uuid with an error; treat it as not found.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -18,17 +22,15 @@ function reachNote(contacts: {
   share_with_verified: boolean;
 } | null) {
   if (!contacts?.whatsapp && !contacts?.telegram) {
-    return ", but you haven't added a WhatsApp or Telegram contact.";
+    return "visibleNoContacts";
   }
-  return contacts.share_with_verified
-    ? ", and message you."
-    : ", but your contacts aren't shared.";
+  return contacts.share_with_verified ? "visibleShared" : "visibleNotShared";
 }
 
 async function Member({
   params,
 }: {
-  params: PageProps<"/member/[id]">["params"];
+  params: PageProps<"/[locale]/member/[id]">["params"];
 }) {
   // params is request-time data, so this streams inside Suspense and a
   // notFound() can only send a 200; the proxy sends the real 404.
@@ -38,14 +40,17 @@ async function Member({
   }
 
   const supabase = await createClient();
-  const [{ data: claims }, { data: member }] = await Promise.all([
+  const [t, locale, { data: claims }, { data: member }] = await Promise.all([
+    getTranslations("member"),
+    getLocale(),
     supabase.auth.getClaims(),
     // RLS returns the profile only if this viewer may see it (or it's their
-    // own), and contacts only if the member shares them.
+    // own): verified, visible, and no block either way. Contacts come back
+    // only if the member shares them.
     supabase
       .from("profiles")
       .select(
-        "id, nickname, bio, is_visible, cities(slug, name_en), contacts(whatsapp, telegram, share_with_verified)",
+        "id, nickname, bio, is_visible, cities(slug, name_en, name_tk), contacts(whatsapp, telegram, share_with_verified)",
       )
       .eq("id", id)
       .not("verified_at", "is", null)
@@ -57,13 +62,15 @@ async function Member({
   }
 
   const isSelf = member.id === claims?.claims.sub;
-  const nickname = member.nickname ?? "Member";
+  const nickname = member.nickname ?? t("fallbackName");
+  const city = member.cities;
+  const citySlug = city?.slug ?? null;
 
   return (
     <>
-      {member.cities && (
-        <Link href={`/city/${member.cities.slug}`} className={textLinkClass}>
-          ← {member.cities.name_en}
+      {city && (
+        <Link href={`/city/${city.slug}`} className={textLinkClass}>
+          ← {cityName(city, locale)}
         </Link>
       )}
 
@@ -73,9 +80,9 @@ async function Member({
           <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
             {nickname}
           </h1>
-          {member.cities && (
+          {city && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {member.cities.name_en}
+              {cityName(city, locale)}
             </p>
           )}
         </div>
@@ -91,29 +98,33 @@ async function Member({
         // You can always read your own row, so say what others see instead.
         <div className="flex flex-col gap-2 rounded-xl bg-zinc-100 p-4 text-sm text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
           <p>
-            This is your profile.{" "}
             {member.is_visible
-              ? "Members in your city can see it"
-              : "It's hidden from other members"}
-            {member.is_visible && reachNote(member.contacts)}
-            {!member.is_visible && "."}
+              ? t(`self.${reachNote(member.contacts)}`)
+              : t("self.hidden")}
           </p>
           <Link href="/settings" className="font-medium underline">
-            Edit in settings
+            {t("self.edit")}
           </Link>
         </div>
-      ) : member.contacts?.whatsapp || member.contacts?.telegram ? (
-        <ContactButtons nickname={nickname} contacts={member.contacts} />
       ) : (
-        <p className="text-sm text-zinc-500">
-          {nickname} hasn&apos;t shared any contact details.
-        </p>
+        <>
+          {member.contacts?.whatsapp || member.contacts?.telegram ? (
+            <ContactButtons nickname={nickname} contacts={member.contacts} />
+          ) : (
+            <p className="text-sm text-zinc-500">{t("noContacts", { nickname })}</p>
+          )}
+          <SafetyActions
+            nickname={nickname}
+            block={blockMember.bind(null, member.id, citySlug)}
+            report={reportMember.bind(null, member.id, citySlug)}
+          />
+        </>
       )}
     </>
   );
 }
 
-export default function MemberPage({ params }: PageProps<"/member/[id]">) {
+export default function MemberPage({ params }: PageProps<"/[locale]/member/[id]">) {
   return (
     <PageShell>
       <Suspense
