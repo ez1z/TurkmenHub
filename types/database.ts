@@ -246,7 +246,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      city_member_counts: {
+        Row: {
+          country_code: string | null
+          group_url: string | null
+          id: number | null
+          member_count: number | null
+          name_en: string | null
+          name_tk: string | null
+          slug: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       redeem_invite: { Args: { invite_code: string }; Returns: undefined }
