@@ -54,11 +54,11 @@ The MVP has 8 screens. Pick an unchecked one if you want something to build.
 - [x] Welcome and sign-in
 - [x] Invite code
 - [x] Profile setup
-- [ ] Home: list of cities with member counts
-- [ ] City page
-- [ ] Member profile
+- [x] Home: list of cities with member counts
+- [x] City page
+- [x] Member profile
 - [ ] Report and block
-- [x] Settings: profile, visibility, contacts
+- [x] Settings: profile, visibility, contacts, my invites
 - [ ] Settings: language, delete account
 
 ### Sketch of the two main screens (example data)
@@ -127,7 +127,9 @@ All of the schema lives in [`supabase/migrations/`](supabase/migrations/).
 | `blocks`   | Who blocked whom. Blocks hide members in both directions                    |
 | `reports`  | Reports on members, reviewed by the founder                                 |
 
-There is one function the app calls: **`redeem_invite(code)`**. In a single step, it marks the user as verified and gives them 3 invite codes of their own. Call it from the app with `supabase.rpc("redeem_invite", { invite_code })`.
+There is one function the app calls: **`redeem_invite(code)`**. In a single transaction, it checks that the code exists and is unused, marks it used, marks the user as verified, and gives them 3 invite codes of their own. Call it from the app with `supabase.rpc("redeem_invite", { invite_code })`. It fails with `Invalid invite code`, `Invite code already used` or `Already verified`.
+
+The home page reads member counts from the **`city_member_counts`** view. It runs under the viewer's RLS (`security_invoker`), so each count matches what that viewer sees on the city page: hidden and blocked members aren't counted.
 
 A new profile row is created automatically when someone signs up for the first time (this is done by a database trigger).
 
@@ -217,20 +219,9 @@ Google is the only way to sign in, so you need your own Google OAuth client for 
 
 ### 6. Add test data
 
-Because the app is invite-only, a fresh database has no way in. Open **Studio → SQL Editor** (http://127.0.0.1:54323) and run:
+Because the app is invite-only, a fresh database has no way in. [`supabase/seed.sql`](supabase/seed.sql) adds three cities and three founder codes (`LOCALDEV01`, `LOCALDEV02`, `LOCALDEV03`). `supabase start` loads it the first time. To reload it later, run `npx supabase db reset` (this wipes local data).
 
-```sql
--- A few cities to browse
-insert into public.cities (slug, name_en, name_tk, country_code) values
-  ('kuala-lumpur', 'Kuala Lumpur', 'Kuala-Lumpur', 'MY'),
-  ('istanbul',     'Istanbul',     'Stambul',      'TR'),
-  ('berlin',       'Berlin',       'Berlin',       'DE');
-
--- A "founder" invite code you can redeem after signing in
-insert into public.invites (code) values ('LOCALDEV01');
-```
-
-Once you sign in, you can redeem `LOCALDEV01`. That marks you as verified, and you get 3 new codes. You can use them to verify a second Google account so you can test what one member sees of another.
+Once you sign in, redeem one of the founder codes. That marks you as verified, and you get 3 new codes under **Settings → My invites**. Use one to verify a second Google account, so you can test what one member sees of another.
 
 ### 7. Run the app
 
@@ -257,6 +248,7 @@ Open **http://localhost:3000**.
 | `npx supabase start`/`stop`| Start/stop the local database                    |
 | `npx supabase db reset`    | Wipe the local DB and re-apply every migration   |
 | `npx supabase status`      | Show local URLs and keys                         |
+| `npx supabase test db`     | Run the database tests in `supabase/tests/`      |
 
 ### Changing the database schema
 
@@ -280,6 +272,16 @@ Open **http://localhost:3000**.
 
 Never edit a migration that has already been merged. To change something, write a new migration.
 
+### Database tests
+
+[`supabase/tests/rls.test.sql`](supabase/tests/rls.test.sql) checks the access rules with [pgTAP](https://pgtap.org). It signs in as different users the way the API does: it switches to the `authenticated` role and sets the JWT claims. It covers unverified users being locked out, what verified members can see, contacts staying hidden unless shared, blocks, and invite codes working exactly once. It runs in a transaction that is rolled back, so it leaves your data alone.
+
+```bash
+npx supabase test db
+```
+
+If you change an RLS policy or `redeem_invite`, add a test for it.
+
 ### Pull requests
 
 1. Create a branch from `main`, for example `feat/city-page` or `fix/invite-error`.
@@ -302,6 +304,9 @@ app/                    Next.js App Router pages and routes
   welcome/              Welcome and sign-in page
   invite/               Invite code screen (logged-in, unverified users)
   onboarding/           Profile setup screen (verified users without nickname/city)
+  city/[slug]/          City page: members, "new this week", city group link
+  member/[id]/          Member profile with WhatsApp/Telegram buttons
+  settings/             Profile, contacts and "My invites"
 components/             React components
 lib/supabase/
   client.ts             Supabase client for Client Components (browser)
@@ -309,10 +314,13 @@ lib/supabase/
   proxy.ts              Session refresh logic used by the root proxy
 proxy.ts                Next.js 16 "proxy" (used to be middleware): refreshes the session on every request
                         and routes users: logged out → /welcome, unverified → /invite,
-                        no nickname/city → /onboarding
+                        no nickname/city → /onboarding. A shared /city or /member link opened on
+                        the way is remembered (lib/return-to.ts) and opened once setup is done
 supabase/
   config.toml           Local Supabase configuration
   migrations/           The database schema, one SQL file per change
+  seed.sql              Local test data: cities and founder invite codes
+  tests/                pgTAP tests for RLS and invites
 types/database.ts       Generated TypeScript types for the database (don't edit by hand)
 ```
 
@@ -363,10 +371,13 @@ npm run gen:types           # regenerate types from the linked project
 
 ### Issuing invite codes
 
-Founder codes have no `created_by`. To issue some, run this in the production SQL editor:
+Founder codes have no `created_by`. To issue some, run this in the production SQL editor. It uses the same random code generator as member invites and prints the new codes:
 
 ```sql
-insert into public.invites (code) values ('FIRSTCODE1'), ('FIRSTCODE2');
+insert into public.invites (code, created_by)
+select private.generate_invite_code(), null
+from generate_series(1, 5)
+returning code;
 ```
 
-Use only uppercase letters and digits, because `redeem_invite` converts whatever the user types to uppercase before checking it.
+If you write codes by hand instead, use only uppercase letters and digits, because `redeem_invite` converts whatever the user types to uppercase before checking it.
