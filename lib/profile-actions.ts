@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { takeReturnTo } from "@/lib/return-to";
 import { createClient } from "@/lib/supabase/server";
 import {
   profileFormSchema,
@@ -97,14 +98,14 @@ async function save(formData: FormData): Promise<ProfileFormState> {
 }
 
 // Last onboarding step: once nickname and city are saved, the proxy lets the
-// member into the app.
+// member into the app. They go to the shared link they first opened, if any.
 export async function completeOnboarding(
   _prevState: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
   const state = await save(formData);
   if (state.saved) {
-    redirect("/");
+    redirect(await takeReturnTo());
   }
   return state;
 }

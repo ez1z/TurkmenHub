@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { redeemInvite, type InviteState } from "@/app/invite/actions";
 
-const initialState: InviteState = { error: "" };
+const initialState: InviteState = { error: "", code: "" };
 
 export default function InviteForm() {
   const [state, formAction, pending] = useActionState(
@@ -29,6 +29,7 @@ export default function InviteForm() {
         autoCapitalize="characters"
         spellCheck={false}
         maxLength={20}
+        defaultValue={state.code}
         placeholder="ABCDE23456"
         aria-invalid={state.error ? true : undefined}
         aria-describedby={state.error ? "code-error" : undefined}
