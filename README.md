@@ -272,6 +272,12 @@ Open **http://localhost:3000**.
 
 Never edit a migration that has already been merged. To change something, write a new migration.
 
+### Translations
+
+All UI text lives in `messages/en.json` and `messages/tk.json`. Add every new key to both files. `en.json` is the reference: `npm run typecheck` fails on a `t("...")` key that isn't in it. Server Actions return keys from the `errors` section, never text, and the form shows them in the visitor's language.
+
+The language comes from the `NEXT_LOCALE` cookie, set by the switch on the sign-in page and in Settings. Without the cookie, it comes from the browser's languages, and the default is Turkmen.
+
 ### Database tests
 
 [`supabase/tests/rls.test.sql`](supabase/tests/rls.test.sql) checks the access rules with [pgTAP](https://pgtap.org). It signs in as different users the way the API does: it switches to the `authenticated` role and sets the JWT claims. It covers unverified users being locked out, what verified members can see, contacts staying hidden unless shared, blocks, and invite codes working exactly once. It runs in a transaction that is rolled back, so it leaves your data alone.
@@ -300,14 +306,22 @@ If you change an RLS policy or `redeem_invite`, add a test for it.
 
 ```
 app/                    Next.js App Router pages and routes
+  [locale]/             Every page, once per language (tk, en). The locale never shows in the URL;
+                        the proxy rewrites /city/x to /tk/city/x internally (see i18n/routing.ts)
+    welcome/            Welcome and sign-in page, with a language switch
+    invite/             Invite code screen (logged-in, unverified users)
+    onboarding/         Profile setup screen (verified users without nickname/city)
+    city/[slug]/        City page: members, "new this week", city group link
+    member/[id]/        Member profile: WhatsApp/Telegram buttons, Report and Block
+    settings/           Profile, contacts, language, "My invites", sign out, delete account
+    privacy/, rules/    Public plain-language pages, readable without signing in
+    [...missing]/       Unknown paths, sent to the translated not-found page
   auth/callback/        OAuth callback: exchanges Google's code for a session
-  welcome/              Welcome and sign-in page
-  invite/               Invite code screen (logged-in, unverified users)
-  onboarding/           Profile setup screen (verified users without nickname/city)
-  city/[slug]/          City page: members, "new this week", city group link
-  member/[id]/          Member profile with WhatsApp/Telegram buttons
-  settings/             Profile, contacts and "My invites"
+  manifest.ts           Web app manifest, so the app can be installed to a home screen
 components/             React components
+i18n/                   next-intl setup: languages and how each request picks one
+messages/               UI text: en.json and tk.json, same keys in both
+public/sw.js            Service worker: shows public/offline.html when the app opens with no connection
 lib/supabase/
   client.ts             Supabase client for Client Components (browser)
   server.ts             Supabase client for Server Components, Route Handlers, Server Actions
@@ -381,3 +395,30 @@ returning code;
 ```
 
 If you write codes by hand instead, use only uppercase letters and digits, because `redeem_invite` converts whatever the user types to uppercase before checking it.
+
+### Reviewing reports
+
+Members can't read reports, including their own. Review them in the SQL editor:
+
+```sql
+select r.created_at, r.reason, r.details, p.nickname as reported, r.reported_id
+from public.reports r
+join public.profiles p on p.id = r.reported_id
+order by r.created_at desc;
+```
+
+`reporter_id` is null when the reporter has since deleted their account.
+
+### Keeping the free project awake
+
+`.github/workflows/keep-alive.yml` calls `public.keep_alive()` once a day, so the free Supabase project doesn't pause after a week without activity. It needs two repository secrets (**Settings → Secrets and variables → Actions**): `SUPABASE_URL` and `SUPABASE_ANON_KEY`, with the same values as the Vercel env vars. To check that it works, open **Actions → Keep Supabase awake → Run workflow**.
+
+GitHub turns off scheduled workflows after 60 days without commits. It sends an email first, and you can turn the workflow back on with one click.
+
+### Testing "Add to Home Screen"
+
+Installing needs HTTPS, so test on the Vercel deployment, not on localhost from a phone.
+
+- **Android (Chrome):** open the site, then tap **⋮ → Add to Home screen** (or **Install app**). The app opens full screen with the green TH icon.
+- **iPhone (Safari):** tap **Share → Add to Home Screen**. iOS uses `app/apple-icon.png`.
+- **Offline:** open the installed app once while online, then turn on airplane mode and open it again. It should show the "Internet ýok / You're offline" page, not a browser error.
