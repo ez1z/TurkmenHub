@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import MyInvites from "@/components/my-invites";
 import ProfileFormLoader from "@/components/profile-form-loader";
+import { textLinkClass } from "@/lib/styles";
 
 // Only members with a finished profile get here (see proxy.ts).
 export default function SettingsPage() {
@@ -8,10 +10,7 @@ export default function SettingsPage() {
     <div className="flex flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full max-w-sm flex-col gap-6 rounded-2xl bg-white p-8 dark:bg-zinc-950">
         <div className="flex flex-col gap-2">
-          <Link
-            href="/"
-            className="text-sm text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-zinc-50"
-          >
+          <Link href="/" className={textLinkClass}>
             ← Home
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
@@ -28,6 +27,25 @@ export default function SettingsPage() {
         >
           <ProfileFormLoader mode="settings" />
         </Suspense>
+
+        <section
+          aria-labelledby="my-invites"
+          className="flex flex-col gap-3 border-t border-black/[.08] pt-6 dark:border-white/[.145]"
+        >
+          <h2
+            id="my-invites"
+            className="text-base font-semibold text-black dark:text-zinc-50"
+          >
+            My invites
+          </h2>
+          <Suspense
+            fallback={
+              <div className="h-48 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />
+            }
+          >
+            <MyInvites />
+          </Suspense>
+        </section>
       </main>
     </div>
   );
