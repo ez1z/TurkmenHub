@@ -1,5 +1,6 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import Modal from "@/components/modal";
@@ -21,24 +22,25 @@ export default function DeleteAccount() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-12 w-full rounded-full border border-red-600/30 text-sm font-medium text-red-600 transition-colors hover:bg-red-600/[.06] dark:border-red-400/30 dark:text-red-400"
+        className="flex min-h-14 w-full items-center gap-3 px-4 text-left font-medium text-danger transition-colors hover:bg-danger-soft"
       >
+        <Trash2 aria-hidden="true" className="h-5 w-5" />
         {t("delete")}
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} title={t("deleteTitle")}>
-        <div className="flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex flex-col gap-2 text-sm leading-relaxed text-ink-muted">
           <p>{t("deleteBody")}</p>
           <p>{t("deleteKept")}</p>
         </div>
         <form action={formAction} className="flex flex-col gap-4">
-          <label className="flex cursor-pointer items-start gap-3 text-sm">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-danger-soft p-4 text-sm text-ink">
             <input
               type="checkbox"
               name="confirm"
               required
               aria-describedby={state.error ? "delete-error" : undefined}
-              className="mt-0.5 h-4 w-4 accent-red-600"
+              className="mt-0.5 h-5 w-5 shrink-0 accent-danger"
             />
             {t("deleteConfirm")}
           </label>

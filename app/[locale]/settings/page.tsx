@@ -1,74 +1,87 @@
+import { LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { Suspense } from "react";
-import CardShell from "@/components/card-shell";
 import DeleteAccount from "@/components/delete-account";
 import LanguageSwitcher from "@/components/language-switcher";
 import MyInvites from "@/components/my-invites";
+import PageShell, { BackLink } from "@/components/page-shell";
 import ProfileFormLoader from "@/components/profile-form-loader";
 import { signOut } from "@/lib/account-actions";
-import { outlineButtonClass, textLinkClass } from "@/lib/styles";
+import {
+  cardClass,
+  leadClass,
+  pageTitleClass,
+  sectionLabelClass,
+  skeletonClass,
+} from "@/lib/styles";
 
-const sectionClass =
-  "flex flex-col gap-3 border-t border-black/[.08] pt-6 dark:border-white/[.145]";
-const headingClass = "text-base font-semibold text-black dark:text-zinc-50";
+// A titled group, like the sections of a phone's settings app.
+function Group({
+  id,
+  title,
+  children,
+  className = "",
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section aria-labelledby={id} className={`flex flex-col gap-3 ${className}`}>
+      <h2 id={id} className={sectionLabelClass}>
+        {title}
+      </h2>
+      <div className={`${cardClass} overflow-hidden`}>{children}</div>
+    </section>
+  );
+}
 
 // Only members with a finished profile get here (see proxy.ts).
 export default function SettingsPage() {
   const t = useTranslations("settings");
 
   return (
-    <CardShell>
+    <PageShell back={<BackLink href="/" label={t("home")} />}>
       <div className="flex flex-col gap-2">
-        <Link href="/" className={textLinkClass}>
-          ← {t("home")}
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("intro")}</p>
+        <h1 className={pageTitleClass}>{t("title")}</h1>
+        <p className={leadClass}>{t("intro")}</p>
       </div>
-      <Suspense
-        fallback={
-          <div className="h-96 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />
-        }
-      >
-        <ProfileFormLoader mode="settings" />
-      </Suspense>
 
-      <section aria-labelledby="language" className={sectionClass}>
-        <h2 id="language" className={headingClass}>
-          {t("language")}
-        </h2>
-        <LanguageSwitcher />
-      </section>
+      <div className={`${cardClass} p-5 sm:p-6`}>
+        <Suspense fallback={<div className={`${skeletonClass} h-[36rem]`} />}>
+          <ProfileFormLoader mode="settings" />
+        </Suspense>
+      </div>
+
+      <Group id="language" title={t("language")}>
+        <div className="p-3">
+          <LanguageSwitcher />
+        </div>
+      </Group>
 
       {/* scroll-mt so the "invite someone" link from an empty city doesn't
-          land with the heading under the browser bar. */}
-      <section aria-labelledby="my-invites" className={`${sectionClass} scroll-mt-6`}>
-        <h2 id="my-invites" className={headingClass}>
-          {t("invites")}
-        </h2>
-        <Suspense
-          fallback={
-            <div className="h-48 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />
-          }
-        >
+          land with the heading under the sticky top bar. */}
+      <Group id="my-invites" title={t("invites")} className="scroll-mt-20">
+        <Suspense fallback={<div className={`${skeletonClass} h-48 rounded-none`} />}>
           <MyInvites />
         </Suspense>
-      </section>
+      </Group>
 
-      <section aria-labelledby="account" className={sectionClass}>
-        <h2 id="account" className={headingClass}>
-          {t("account")}
-        </h2>
-        <form action={signOut}>
-          <button type="submit" className={`h-12 w-full ${outlineButtonClass}`}>
-            {t("signOut")}
-          </button>
-        </form>
-        <DeleteAccount />
-      </section>
-    </CardShell>
+      <Group id="account" title={t("account")}>
+        <div className="flex flex-col divide-y divide-line">
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="flex min-h-14 w-full items-center gap-3 px-4 text-left font-medium text-ink transition-colors hover:bg-subtle"
+            >
+              <LogOut aria-hidden="true" className="h-5 w-5 text-ink-muted" />
+              {t("signOut")}
+            </button>
+          </form>
+          <DeleteAccount />
+        </div>
+      </Group>
+    </PageShell>
   );
 }

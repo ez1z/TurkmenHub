@@ -10,13 +10,18 @@ import {
 } from "@/lib/profile-actions";
 import type { ErrorKey } from "@/lib/error-key";
 import type { ProfileFieldErrors, ProfileFormValues } from "@/lib/profile-schema";
-import { errorTextClass, primaryButtonClass } from "@/lib/styles";
+import {
+  errorTextClass,
+  fieldClass,
+  hintClass,
+  labelClass,
+  primaryButtonClass,
+} from "@/lib/styles";
 
-const labelClass = "text-sm font-medium text-zinc-700 dark:text-zinc-300";
-const hintClass = "text-sm text-zinc-500";
-const fieldClass =
-  "w-full rounded-xl border border-black/[.08] bg-transparent px-4 text-black placeholder:text-zinc-400 focus:border-foreground focus:outline-none aria-invalid:border-red-600 disabled:opacity-60 dark:border-white/[.145] dark:text-zinc-50 dark:aria-invalid:border-red-400";
-const legendClass = "mb-1 text-base font-semibold text-black dark:text-zinc-50";
+// A legend sits outside its fieldset's flex gap, so it brings its own margin.
+const legendClass = "mb-4 font-display text-xl font-semibold tracking-tight text-ink";
+const prefixClass =
+  "pointer-events-none absolute inset-y-0 left-4 flex items-center text-ink-muted";
 
 // The id of the message under a field: its error if it has one, else its hint.
 function describedBy(
@@ -70,7 +75,7 @@ function Switch({
   return (
     <label
       htmlFor={name}
-      className="flex cursor-pointer items-start justify-between gap-4"
+      className="flex cursor-pointer items-start justify-between gap-4 rounded-2xl bg-subtle p-4"
     >
       <span className="flex flex-col gap-1">
         <span className={labelClass}>{label}</span>
@@ -86,7 +91,7 @@ function Switch({
       />
       <span
         aria-hidden="true"
-        className="relative mt-0.5 h-7 w-12 shrink-0 rounded-full bg-zinc-300 transition-colors peer-checked:bg-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-foreground after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5 dark:bg-zinc-700 dark:peer-checked:after:bg-black"
+        className="relative mt-0.5 h-7 w-12 shrink-0 rounded-full bg-line transition-colors duration-200 peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:after:translate-x-5"
       />
     </label>
   );
@@ -163,7 +168,7 @@ export default function ProfileForm({
 
         <div className="flex flex-col gap-2">
           <label htmlFor="bio" className={labelClass}>
-            {t("bio")} <span className="font-normal text-zinc-500">{t("optional")}</span>
+            {t("bio")} <span className="font-normal text-ink-muted">{t("optional")}</span>
           </label>
           <textarea
             id="bio"
@@ -194,7 +199,9 @@ export default function ProfileForm({
       <fieldset className="flex flex-col gap-5">
         <legend className={legendClass}>
           {t("contacts")}{" "}
-          <span className="text-sm font-normal text-zinc-500">{t("optional")}</span>
+          <span className="font-sans text-sm font-normal tracking-normal text-ink-muted">
+            {t("optional")}
+          </span>
         </legend>
 
         <div className="flex flex-col gap-2">
@@ -202,10 +209,7 @@ export default function ProfileForm({
             {t("whatsapp")}
           </label>
           <div className="relative">
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-zinc-500"
-            >
+            <span aria-hidden="true" className={prefixClass}>
               +
             </span>
             <input
@@ -233,10 +237,7 @@ export default function ProfileForm({
             {t("telegram")}
           </label>
           <div className="relative">
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-zinc-500"
-            >
+            <span aria-hidden="true" className={prefixClass}>
               @
             </span>
             <input
@@ -280,7 +281,7 @@ export default function ProfileForm({
           {pending ? t("saving") : mode === "onboarding" ? t("continue") : t("save")}
         </button>
         {/* Cleared while the next save is in flight. */}
-        <p role="status" className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <p role="status" className="text-center text-sm font-medium text-brand-ink">
           {state.saved && !pending ? t("saved") : ""}
         </p>
       </div>

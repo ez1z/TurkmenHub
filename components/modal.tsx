@@ -49,10 +49,12 @@ export default function Modal({
           event.currentTarget.close();
         }
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl bg-white p-0 text-black shadow-xl backdrop:bg-black/50 dark:bg-zinc-900 dark:text-zinc-50"
+      // A bottom sheet on phones (thumb-reachable, like native apps), a
+      // centred card from sm up. Motion lives in .sheet in globals.css.
+      className="sheet mx-auto mt-auto mb-0 max-h-[90dvh] w-full overflow-y-auto max-w-none rounded-t-3xl bg-surface p-0 text-ink shadow-xl sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-sm sm:rounded-3xl"
     >
-      <div className="flex flex-col gap-4 p-6">
-        <h2 id={titleId} className="text-lg font-semibold tracking-tight">
+      <div className="flex flex-col gap-5 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6">
+        <h2 id={titleId} className="font-display text-xl font-semibold tracking-tight text-balance">
           {title}
         </h2>
         {children}

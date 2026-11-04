@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import CardShell from "@/components/card-shell";
-import { textLinkClass } from "@/lib/styles";
+import PageShell, { BackLink } from "@/components/page-shell";
+import { cardClass, leadClass, pageTitleClass } from "@/lib/styles";
 
 type Namespace = "privacy" | "rules";
 
@@ -19,35 +18,44 @@ export default function PolicyPage({
   const tCommon = useTranslations("common");
 
   return (
-    <CardShell>
+    <PageShell back={<BackLink href="/" label={tCommon("back")} />}>
       <div className="flex flex-col gap-2">
-        <Link href="/" className={textLinkClass}>
-          ← {tCommon("back")}
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("intro")}</p>
+        <h1 className={pageTitleClass}>{t("title")}</h1>
+        <p className={leadClass}>{t("intro")}</p>
       </div>
 
-      {sections.map((section) => (
-        <section key={section} aria-labelledby={`${namespace}-${section}`} className="flex flex-col gap-2">
+      {sections.map((section, index) => (
+        <section
+          key={section}
+          aria-labelledby={`${namespace}-${section}`}
+          className={`${cardClass} flex flex-col gap-4 p-5 sm:p-6`}
+        >
           <h2
             id={`${namespace}-${section}`}
-            className="text-base font-semibold text-black dark:text-zinc-50"
+            className="flex items-baseline gap-3 font-display text-xl font-semibold tracking-tight text-ink"
           >
+            <span aria-hidden="true" className="font-display text-base text-accent tabular-nums">
+              {String(index + 1).padStart(2, "0")}
+            </span>
             {/* Keys are checked against en.json by the message types. */}
             {t(`${section}.title` as Parameters<typeof t>[0])}
           </h2>
-          <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed text-zinc-700 marker:text-zinc-400 dark:text-zinc-300">
+          {/* Bullets are small carpet diamonds in the accent colour. */}
+          <ul className="flex flex-col gap-3 text-[15px] leading-relaxed text-ink-muted">
             {(t.raw(`${section}.items` as Parameters<typeof t>[0]) as string[]).map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item} className="flex gap-3">
+                <span
+                  aria-hidden="true"
+                  className="mt-[0.6em] h-1.5 w-1.5 shrink-0 rotate-45 bg-accent"
+                />
+                {item}
+              </li>
             ))}
           </ul>
         </section>
       ))}
 
-      <p className="text-xs text-zinc-500">{t("updated")}</p>
-    </CardShell>
+      <p className="px-1 text-xs text-ink-muted">{t("updated")}</p>
+    </PageShell>
   );
 }

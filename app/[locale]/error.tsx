@@ -1,9 +1,15 @@
 "use client";
 
+import { CircleAlert, RotateCcw, WifiOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useOffline } from "next/offline";
-import { outlineButtonClass, primaryButtonClass } from "@/lib/styles";
+import {
+  leadClass,
+  outlineButtonClass,
+  pageTitleClass,
+  primaryButtonClass,
+} from "@/lib/styles";
 
 // A page failed to render, e.g. the database didn't answer. The layout is
 // still there, so this can be translated. Offline gets its own message,
@@ -11,27 +17,35 @@ import { outlineButtonClass, primaryButtonClass } from "@/lib/styles";
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   const t = useTranslations("error");
   const isOffline = useOffline();
+  const Icon = isOffline ? WifiOff : CircleAlert;
 
   return (
-    <div className="flex flex-1 justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-md flex-col gap-6 bg-white px-4 py-6 sm:my-8 sm:rounded-2xl sm:p-8 dark:bg-zinc-950">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 pt-20 pb-12">
+      <div className="flex flex-col items-center gap-5 text-center">
+        <span
+          aria-hidden="true"
+          className={`flex h-16 w-16 items-center justify-center rounded-2xl ${
+            isOffline ? "bg-warn-soft text-warn-ink" : "bg-danger-soft text-danger"
+          }`}
+        >
+          <Icon className="h-7 w-7" />
+        </span>
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
+          <h1 className={pageTitleClass}>
             {isOffline ? t("offlineTitle") : t("title")}
           </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            {isOffline ? t("offlineBody") : t("body")}
-          </p>
+          <p className={leadClass}>{isOffline ? t("offlineBody") : t("body")}</p>
         </div>
-        <div className="flex flex-col gap-3">
-          <button type="button" onClick={reset} className={primaryButtonClass}>
-            {t("retry")}
-          </button>
-          <Link href="/" className={`flex h-12 w-full items-center justify-center ${outlineButtonClass}`}>
-            {t("home")}
-          </Link>
-        </div>
-      </main>
-    </div>
+      </div>
+      <div className="flex flex-col gap-3">
+        <button type="button" onClick={reset} className={primaryButtonClass}>
+          <RotateCcw aria-hidden="true" className="h-4 w-4" />
+          {t("retry")}
+        </button>
+        <Link href="/" className={`h-12 w-full text-base ${outlineButtonClass}`}>
+          {t("home")}
+        </Link>
+      </div>
+    </main>
   );
 }

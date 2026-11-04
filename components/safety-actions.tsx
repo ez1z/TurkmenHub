@@ -1,5 +1,6 @@
 "use client";
 
+import { Ban, Flag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import type { ReportState } from "@/app/[locale]/member/[id]/actions";
@@ -8,12 +9,17 @@ import { REPORT_REASONS } from "@/lib/report-reasons";
 import {
   dangerButtonClass,
   errorTextClass,
+  fieldClass,
+  ghostButtonClass,
+  labelClass,
   outlineButtonClass,
   primaryButtonClass,
 } from "@/lib/styles";
 
-const smallButtonClass = `flex h-10 items-center justify-center px-4 ${outlineButtonClass}`;
+const smallButtonClass = `h-10 px-4 ${ghostButtonClass}`;
 const cancelButtonClass = `h-12 w-full ${outlineButtonClass}`;
+const bodyClass = "text-sm leading-relaxed text-ink-muted";
+const checkboxClass = "mt-0.5 h-5 w-5 shrink-0 accent-brand";
 
 const initialReport: ReportState = { error: "", sent: false };
 
@@ -48,11 +54,13 @@ export default function SafetyActions({
 
   return (
     <>
-      <div className="flex flex-wrap gap-2 border-t border-black/[.08] pt-6 dark:border-white/[.145]">
+      <div className="flex justify-center gap-2 border-t border-line pt-6">
         <button type="button" onClick={openReport} className={smallButtonClass}>
+          <Flag aria-hidden="true" className="h-4 w-4" />
           {t("report")}
         </button>
         <button type="button" onClick={() => setDialog("block")} className={smallButtonClass}>
+          <Ban aria-hidden="true" className="h-4 w-4" />
           {t("block")}
         </button>
       </div>
@@ -62,9 +70,7 @@ export default function SafetyActions({
         onClose={() => setDialog(null)}
         title={t("blockTitle", { nickname })}
       >
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {t("blockBody", { nickname })}
-        </p>
+        <p className={bodyClass}>{t("blockBody", { nickname })}</p>
         {blockState.error && (
           <p role="alert" className={errorTextClass}>
             {tErrors(blockState.error)}
@@ -112,7 +118,7 @@ function ReportForm({
   if (state.sent) {
     return (
       <>
-        <p role="status" className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p role="status" className={bodyClass}>
           {t("reportSent")}
         </p>
         <button type="button" onClick={onDone} className={primaryButtonClass}>
@@ -123,22 +129,24 @@ function ReportForm({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-5">
       <fieldset
         className="flex flex-col gap-2"
         aria-describedby={state.error === "reasonRequired" ? "reason-error" : undefined}
       >
-        <legend className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-          {t("reasonLegend")}
-        </legend>
+        <legend className={`mb-2 ${labelClass}`}>{t("reasonLegend")}</legend>
+        {/* Each reason is a whole tappable row; the picked one turns green. */}
         {REPORT_REASONS.map((reason) => (
-          <label key={reason} className="flex cursor-pointer items-center gap-3 text-sm">
+          <label
+            key={reason}
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-line px-4 text-sm text-ink transition-colors hover:bg-subtle has-checked:border-brand has-checked:bg-brand-soft has-checked:text-brand-ink"
+          >
             <input
               type="radio"
               name="reason"
               value={reason}
               required
-              className="h-4 w-4 accent-foreground"
+              className="h-4 w-4 accent-brand"
             />
             {t(`reasons.${reason}`)}
           </label>
@@ -146,21 +154,21 @@ function ReportForm({
       </fieldset>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="report-details" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor="report-details" className={labelClass}>
           {t("detailsLabel")}{" "}
-          <span className="font-normal text-zinc-500">{t("optional")}</span>
+          <span className="font-normal text-ink-muted">{t("optional")}</span>
         </label>
         <textarea
           id="report-details"
           name="details"
           rows={3}
           maxLength={1000}
-          className="w-full resize-none rounded-xl border border-black/[.08] bg-transparent px-4 py-3 text-sm focus:border-foreground focus:outline-none dark:border-white/[.145]"
+          className={`resize-none py-3 ${fieldClass}`}
         />
       </div>
 
-      <label className="flex cursor-pointer items-start gap-3 text-sm">
-        <input type="checkbox" name="also_block" className="mt-0.5 h-4 w-4 accent-foreground" />
+      <label className="flex cursor-pointer items-start gap-3 text-sm text-ink">
+        <input type="checkbox" name="also_block" className={checkboxClass} />
         {t("alsoBlock", { nickname })}
       </label>
 

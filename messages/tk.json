@@ -13,16 +13,21 @@
     "rules": "Düzgünler",
     "privacy": "Gizlinlik"
   },
+  "flow": {
+    "step": "Ädim {current}/{total}"
+  },
   "language": {
     "label": "Dil"
   },
   "home": {
+    "title": "Şäherler",
     "settings": "Sazlamalar",
     "yourCity": "Siziň şäheriňiz",
     "otherCities": "Beýleki şäherler",
     "allCities": "Ähli şäherler",
     "noCities": "Entek şäher ýok.",
-    "memberCount": "{count} agza"
+    "memberCount": "{count} agza",
+    "summary": "{cities} şäherde {members} agza"
   },
   "city": {
     "allCities": "Ähli şäherler",
@@ -35,7 +40,7 @@
   },
   "member": {
     "fallbackName": "Agza",
-    "you": "(siz)",
+    "you": "Siz",
     "noContacts": "{nickname} habarlaşmak üçin maglumat paýlaşmady.",
     "self": {
       "hidden": "Bu siziň profiliňiz. Ol beýleki agzalardan gizlenen.",
@@ -93,13 +98,18 @@
     "telegramInvalid": "5–32 harp, san ýa-da aşaky çyzyk ulanyň."
   },
   "welcome": {
-    "title": "Giriş",
+    "tagline": "Täze şäherde öz adamlaryňyzy tapyň.",
     "intro": "TurkmenHub daşary ýurtdaky türkmenlere öz şäherlerinde biri-birini tapmaga kömek edýär. Oňa diňe çakylyk bilen girip bolýar.",
     "oauthError": "Girip bolmady. Täzeden synanyşyň.",
     "deleted": "Hasabyňyz we ondaky ähli maglumatlar pozuldy.",
     "sessionExpired": "Sessiýaňyzyň möhleti gutardy, şonuň üçin ulgamdan çykaryldyňyz. Dowam etmek üçin täzeden giriň.",
     "redirecting": "Geçirilýär…",
-    "continueWithGoogle": "Google bilen dowam ediň"
+    "continueWithGoogle": "Google bilen dowam ediň",
+    "points": {
+      "inviteOnly": "Her agza ony tanaýan biriniň çakylyk kody bilen goşulýar.",
+      "privacy": "Sizi kimiň görüp, kimiň size ýazyp biljegini özüňiz saýlaýarsyňyz.",
+      "chat": "Agzalara WhatsApp ýa-da Telegram arkaly ýazyň."
+    }
   },
   "invite": {
     "title": "Çakylyk koduňyzy giriziň",

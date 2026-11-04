@@ -1,12 +1,22 @@
+import { ExternalLink, MapPin, Sparkles, Ticket, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import MemberCard from "@/components/member-card";
-import PageShell from "@/components/page-shell";
+import BrandMark from "@/components/brand-mark";
+import MemberCard, { type Member } from "@/components/member-card";
+import PageShell, { BackLink } from "@/components/page-shell";
 import { cityName } from "@/lib/city-name";
-import { primaryButtonClass, sectionLabelClass, textLinkClass } from "@/lib/styles";
+import { countryName } from "@/lib/country-name";
+import {
+  cardClass,
+  outlineButtonClass,
+  pageTitleClass,
+  primaryButtonClass,
+  sectionLabelClass,
+  skeletonClass,
+} from "@/lib/styles";
 import { createClient } from "@/lib/supabase/server";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -28,7 +38,7 @@ async function loadCity(slug: string) {
       supabase.auth.getClaims(),
       supabase
         .from("city_member_counts")
-        .select("id, name_en, name_tk, group_url, member_count")
+        .select("id, name_en, name_tk, country_code, group_url, member_count")
         .eq("slug", slug)
         .maybeSingle(),
       supabase
@@ -66,9 +76,10 @@ async function loadCity(slug: string) {
 // means notFound() here can only send a 200; the proxy sends the real 404.
 async function City({ params }: { params: PageProps<"/[locale]/city/[slug]">["params"] }) {
   const { slug } = await params;
-  const [data, t, locale] = await Promise.all([
+  const [data, t, tHome, locale] = await Promise.all([
     loadCity(slug),
     getTranslations("city"),
+    getTranslations("home"),
     getLocale(),
   ]);
 
@@ -78,19 +89,28 @@ async function City({ params }: { params: PageProps<"/[locale]/city/[slug]">["pa
 
   const { city, members, newThisWeek, userId } = data;
   const name = cityName({ name_en: city.name_en!, name_tk: city.name_tk! }, locale);
+  const country = countryName(city.country_code, locale);
   // Only you, or nobody you can see yet.
   const onlyYou = members.length === 1 && members[0].id === userId;
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {name}
-          <span className="font-normal text-zinc-500">
-            {" "}
-            · {city.member_count ?? 0}
-          </span>
-        </h1>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
+          <h1 className={`${pageTitleClass} text-4xl`}>{name}</h1>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-muted">
+            {country && (
+              <span className="flex items-center gap-1.5">
+                <MapPin aria-hidden="true" className="h-4 w-4" />
+                {country}
+              </span>
+            )}
+            <span className="flex items-center gap-1.5">
+              <Users aria-hidden="true" className="h-4 w-4" />
+              {tHome("memberCount", { count: city.member_count ?? 0 })}
+            </span>
+          </p>
+        </div>
         {city.group_url && (
           <a
             href={city.group_url}
@@ -99,52 +119,78 @@ async function City({ params }: { params: PageProps<"/[locale]/city/[slug]">["pa
             className={primaryButtonClass}
           >
             {t("joinGroup")}
+            <ExternalLink aria-hidden="true" className="h-4 w-4" />
           </a>
         )}
       </div>
 
       {newThisWeek.length > 0 && (
-        <section aria-labelledby="new-this-week" className="flex flex-col gap-2">
-          <h2 id="new-this-week" className={sectionLabelClass}>
-            {t("newThisWeek")}
-          </h2>
-          <ul className="flex flex-col gap-2">
-            {newThisWeek.map((member) => (
-              <MemberCard
-                key={member.id}
-                member={member}
-                isSelf={member.id === userId}
-              />
-            ))}
-          </ul>
-        </section>
+        <MemberList
+          id="new-this-week"
+          label={
+            <span className="flex items-center gap-1.5 text-accent">
+              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
+              {t("newThisWeek")}
+            </span>
+          }
+          members={newThisWeek}
+          userId={userId}
+        />
       )}
 
-      <section aria-labelledby="members" className="flex flex-col gap-2">
-        <h2 id="members" className={sectionLabelClass}>
-          {t("members")}
-        </h2>
-        {members.length > 0 && (
-          <ul className="flex flex-col gap-2">
-            {members.map((member) => (
-              <MemberCard
-                key={member.id}
-                member={member}
-                isSelf={member.id === userId}
-              />
-            ))}
-          </ul>
-        )}
-        {(members.length === 0 || onlyYou) && (
-          <div className="flex flex-col gap-2 rounded-xl bg-zinc-100 p-4 text-sm text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-            <p>{onlyYou ? t("onlyYou", { city: name }) : t("empty", { city: name })}</p>
-            <Link href="/settings#my-invites" className="font-medium underline">
+      {members.length > 0 && !onlyYou ? (
+        <MemberList id="members" label={t("members")} members={members} userId={userId} />
+      ) : (
+        <section aria-labelledby="members" className="flex flex-col gap-3">
+          <h2 id="members" className={sectionLabelClass}>
+            {t("members")}
+          </h2>
+          {onlyYou && (
+            <ul className={`${cardClass} overflow-hidden`}>
+              <MemberCard member={members[0]} isSelf />
+            </ul>
+          )}
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-line px-6 py-8 text-center">
+            <BrandMark className="h-10 w-10 opacity-80" />
+            <p className="max-w-xs text-sm leading-relaxed text-ink-muted text-pretty">
+              {onlyYou ? t("onlyYou", { city: name }) : t("empty", { city: name })}
+            </p>
+            <Link
+              href="/settings#my-invites"
+              className={`h-10 px-4 ${outlineButtonClass}`}
+            >
+              <Ticket aria-hidden="true" className="h-4 w-4" />
               {t("inviteSomeone")}
             </Link>
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </>
+  );
+}
+
+function MemberList({
+  id,
+  label,
+  members,
+  userId,
+}: {
+  id: string;
+  label: React.ReactNode;
+  members: Member[];
+  userId: string | undefined;
+}) {
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-3">
+      <h2 id={id} className={sectionLabelClass}>
+        {label}
+      </h2>
+      <ul className={`${cardClass} flex flex-col divide-y divide-line overflow-hidden`}>
+        {members.map((member) => (
+          <MemberCard key={member.id} member={member} isSelf={member.id === userId} />
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -154,13 +200,16 @@ export default function CityPage({ params }: PageProps<"/[locale]/city/[slug]">)
   const t = useTranslations("city");
 
   return (
-    <PageShell>
-      <Link href="/" className={textLinkClass}>
-        ← {t("allCities")}
-      </Link>
+    <PageShell back={<BackLink href="/" label={t("allCities")} />}>
       <Suspense
         fallback={
-          <div className="h-96 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />
+          <>
+            <div className="flex flex-col gap-3">
+              <div className={`${skeletonClass} h-10 w-2/3 rounded-xl`} />
+              <div className={`${skeletonClass} h-5 w-1/2 rounded-full`} />
+            </div>
+            <div className={`${skeletonClass} h-96`} />
+          </>
         }
       >
         <City params={params} />

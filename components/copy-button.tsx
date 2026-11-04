@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Copy } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { outlineButtonClass } from "@/lib/styles";
@@ -35,8 +36,13 @@ export default function CopyButton({
       type="button"
       onClick={copy}
       aria-label={label}
-      className={`h-8 px-3 ${outlineButtonClass}`}
+      className={`h-9 px-3.5 ${outlineButtonClass} ${copied ? "border-brand text-brand-ink" : ""}`}
     >
+      {copied ? (
+        <Check aria-hidden="true" className="h-4 w-4" />
+      ) : (
+        <Copy aria-hidden="true" className="h-4 w-4" />
+      )}
       <span aria-live="polite">{copied ? t("copied") : t("copy")}</span>
     </button>
   );

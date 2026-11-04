@@ -6,26 +6,29 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f3ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
     <title>TurkmenHub</title>
     <style>
+      /* The app's palette (app/globals.css), copied: this page can't load it. */
       :root {
-        --bg: #fafafa;
+        --bg: #f7f3ec;
         --card: #ffffff;
-        --text: #171717;
-        --muted: #52525b;
-        --button: #171717;
+        --line: #e4dcce;
+        --text: #1d1b17;
+        --muted: #5f584d;
+        --button: #0e6641;
         --button-text: #ffffff;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #000000;
-          --card: #09090b;
-          --text: #fafafa;
-          --muted: #a1a1aa;
-          --button: #ededed;
-          --button-text: #0a0a0a;
+          --bg: #121110;
+          --card: #1c1a18;
+          --line: #35312c;
+          --text: #f4f0e8;
+          --muted: #aca495;
+          --button: #46c48b;
+          --button-text: #04140c;
         }
       }
       * { box-sizing: border-box; }
@@ -44,12 +47,13 @@
         width: 100%;
         max-width: 24rem;
         padding: 32px;
-        border-radius: 16px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
         background: var(--card);
       }
       h1 { margin: 0 0 8px; font-size: 1.5rem; letter-spacing: -0.01em; }
       p { margin: 0 0 24px; color: var(--muted); line-height: 1.5; }
-      hr { border: 0; border-top: 1px solid rgba(127, 127, 127, 0.25); margin: 0 0 24px; }
+      hr { border: 0; border-top: 1px solid var(--line); margin: 0 0 24px; }
       button {
         width: 100%;
         height: 48px;

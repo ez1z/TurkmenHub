@@ -1,5 +1,7 @@
+import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import Avatar from "@/components/avatar";
 import ContactButtons, { type Contacts } from "@/components/contact-buttons";
 
 export type Member = {
@@ -9,26 +11,8 @@ export type Member = {
   contacts: Contacts;
 };
 
-// The first character as a reader sees it, so an emoji or flag like 🇹🇲
-// (several code points) isn't cut in half.
-function firstCharacter(text: string) {
-  const [first] = new Intl.Segmenter().segment(text);
-  return first?.segment ?? "";
-}
-
-export function Avatar({ nickname }: { nickname: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 font-medium text-zinc-700 uppercase dark:bg-zinc-800 dark:text-zinc-300"
-    >
-      {firstCharacter(nickname)}
-    </span>
-  );
-}
-
-// A member in a city list. The whole card opens their profile; the contact
-// buttons sit above that link so they open the chat instead.
+// A member in a city list. The whole row opens their profile; the contact
+// chips sit above that link so they open the chat instead.
 export default function MemberCard({
   member,
   isSelf,
@@ -42,34 +26,38 @@ export default function MemberCard({
   const nickname = member.nickname ?? t("fallbackName");
 
   return (
-    <li className="relative flex flex-col gap-3 rounded-2xl border border-black/[.08] p-4 transition-colors hover:bg-black/[.02] dark:border-white/[.145] dark:hover:bg-white/[.03]">
-      <div className="flex items-start gap-3">
+    <li className="group relative flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-subtle/60">
+      <div className="flex items-start gap-3.5">
         <Avatar nickname={nickname} />
-        <div className="flex min-w-0 flex-col gap-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-0.5">
           <Link
             href={`/member/${member.id}`}
-            className="font-medium text-black after:absolute after:inset-0 after:rounded-2xl dark:text-zinc-50"
+            className="flex items-center gap-2 font-medium text-ink after:absolute after:inset-0"
           >
-            {nickname}
+            <span className="truncate">{nickname}</span>
             {isSelf && (
-              <span className="ml-2 text-sm font-normal text-zinc-500">
+              <span className="shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand-ink">
                 {t("you")}
               </span>
             )}
           </Link>
           {member.bio && (
-            <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="line-clamp-2 text-sm leading-relaxed text-ink-muted">
               {member.bio}
             </p>
           )}
         </div>
+        <ChevronRight
+          aria-hidden="true"
+          className="mt-3 h-4 w-4 shrink-0 text-ink-subtle transition-transform duration-200 group-hover:translate-x-0.5"
+        />
       </div>
       {/* Your own contacts are always readable to you; no point showing them. */}
       {!isSelf && (
         <ContactButtons
           nickname={nickname}
           contacts={member.contacts}
-          className="relative pl-13"
+          className="relative pl-[3.6rem]"
         />
       )}
     </li>

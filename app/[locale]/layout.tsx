@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import OfflineBanner from "@/components/offline-banner";
 import ServiceWorker from "@/components/service-worker";
 import { routing } from "@/i18n/routing";
@@ -16,6 +16,14 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin", "latin-ext"],
+});
+
+// Headings and big numbers. SOFT rounds the serifs (see font-display in
+// globals.css); opsz keeps large titles from looking heavy.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin", "latin-ext"],
+  axes: ["SOFT", "opsz"],
 });
 
 // One prerendered shell per language (Cache Components needs at least one).
@@ -33,12 +41,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Matches the page background (bg-zinc-50 / black), so the browser bar and
-// an installed app's status bar blend in.
+// Matches the page background (--canvas in globals.css), so the browser bar
+// and an installed app's status bar blend in.
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f3ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#121110" },
   ],
 };
 
@@ -48,9 +56,9 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col bg-canvas font-sans text-ink">
         {/* Inherits the locale and messages from i18n/request.ts. */}
         <NextIntlClientProvider>
           <OfflineBanner />

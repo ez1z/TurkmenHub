@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { redeemInvite, type InviteState } from "@/app/[locale]/invite/actions";
-import { errorTextClass, primaryButtonClass } from "@/lib/styles";
+import { errorTextClass, fieldClass, labelClass, primaryButtonClass } from "@/lib/styles";
 
 const initialState: InviteState = { error: "", code: "" };
 
@@ -17,10 +17,7 @@ export default function InviteForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      <label
-        htmlFor="code"
-        className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-      >
+      <label htmlFor="code" className={labelClass}>
         {t("codeLabel")}
       </label>
       <input
@@ -37,7 +34,8 @@ export default function InviteForm() {
         placeholder="ABCDE23456"
         aria-invalid={state.error ? true : undefined}
         aria-describedby={state.error ? "code-error" : undefined}
-        className="h-12 w-full rounded-xl border border-black/[.08] bg-transparent px-4 font-mono text-lg tracking-widest text-black uppercase placeholder:text-zinc-400 focus:border-foreground focus:outline-none dark:border-white/[.145] dark:text-zinc-50"
+        // Big, spaced and centred, so a code read off a phone is easy to check.
+        className={`h-16 text-center font-mono text-2xl tracking-[0.3em] uppercase placeholder:tracking-[0.3em] ${fieldClass}`}
       />
 
       {state.error && (
@@ -46,7 +44,7 @@ export default function InviteForm() {
         </p>
       )}
 
-      <button type="submit" disabled={pending} className={primaryButtonClass}>
+      <button type="submit" disabled={pending} className={`mt-2 ${primaryButtonClass}`}>
         {pending ? t("checking") : t("continue")}
       </button>
     </form>

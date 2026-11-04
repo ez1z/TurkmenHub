@@ -28,7 +28,8 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <div role="group" aria-label={t("label")} className="flex rounded-full border border-black/[.08] p-1 dark:border-white/[.145]">
+    // A segmented control: the picked language sits on a raised white pill.
+    <div role="group" aria-label={t("label")} className="flex rounded-full bg-subtle p-1">
       {routing.locales.map((locale) => (
         <button
           key={locale}
@@ -37,7 +38,7 @@ export default function LanguageSwitcher() {
           aria-pressed={locale === current}
           disabled={pending}
           onClick={() => choose(locale)}
-          className="h-9 flex-1 rounded-full px-4 text-sm font-medium text-zinc-600 transition-colors aria-pressed:bg-foreground aria-pressed:text-background disabled:opacity-60 dark:text-zinc-400"
+          className="h-10 flex-1 rounded-full px-4 text-sm font-medium text-ink-muted transition-[background-color,color,box-shadow] duration-150 hover:text-ink disabled:opacity-60 aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-card"
         >
           {NATIVE_NAMES[locale]}
         </button>

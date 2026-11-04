@@ -1,13 +1,21 @@
+import { Eye, EyeOff, MapPin, Pencil } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
+import Avatar from "@/components/avatar";
 import ContactButtons from "@/components/contact-buttons";
-import { Avatar } from "@/components/member-card";
-import PageShell from "@/components/page-shell";
+import PageShell, { BackLink } from "@/components/page-shell";
 import SafetyActions from "@/components/safety-actions";
 import { cityName } from "@/lib/city-name";
-import { textLinkClass } from "@/lib/styles";
+import {
+  cardClass,
+  noteClass,
+  outlineButtonClass,
+  pageTitleClass,
+  skeletonClass,
+} from "@/lib/styles";
 import { createClient } from "@/lib/supabase/server";
 import { blockMember, reportMember } from "./actions";
 
@@ -27,22 +35,14 @@ function reachNote(contacts: {
   return contacts.share_with_verified ? "visibleShared" : "visibleNotShared";
 }
 
-async function Member({
-  params,
-}: {
-  params: PageProps<"/[locale]/member/[id]">["params"];
-}) {
-  // params is request-time data, so this streams inside Suspense and a
-  // notFound() can only send a 200; the proxy sends the real 404.
-  const { id } = await params;
+// The top bar's back link and the page body both need the member, so the
+// query runs once per request and both read the result.
+const loadMember = cache(async (id: string) => {
   if (!UUID.test(id)) {
-    notFound();
+    return null;
   }
-
   const supabase = await createClient();
-  const [t, locale, { data: claims }, { data: member }] = await Promise.all([
-    getTranslations("member"),
-    getLocale(),
+  const [{ data: claims }, { data: member }] = await Promise.all([
     supabase.auth.getClaims(),
     // RLS returns the profile only if this viewer may see it (or it's their
     // own): verified, visible, and no block either way. Contacts come back
@@ -56,32 +56,58 @@ async function Member({
       .not("verified_at", "is", null)
       .maybeSingle(),
   ]);
+  return member ? { member, isSelf: member.id === claims?.claims.sub } : null;
+});
 
-  if (!member) {
+// Back to the member's city, once we know which one it is.
+async function Back({ params }: { params: PageProps<"/[locale]/member/[id]">["params"] }) {
+  const { id } = await params;
+  const [data, locale, tCommon] = await Promise.all([
+    loadMember(id),
+    getLocale(),
+    getTranslations("common"),
+  ]);
+  const city = data?.member.cities;
+  return city ? (
+    <BackLink href={`/city/${city.slug}`} label={cityName(city, locale)} />
+  ) : (
+    <BackLink href="/" label={tCommon("back")} />
+  );
+}
+
+async function Member({
+  params,
+}: {
+  params: PageProps<"/[locale]/member/[id]">["params"];
+}) {
+  // params is request-time data, so this streams inside Suspense and a
+  // notFound() can only send a 200; the proxy sends the real 404.
+  const { id } = await params;
+  const [t, locale, data] = await Promise.all([
+    getTranslations("member"),
+    getLocale(),
+    loadMember(id),
+  ]);
+
+  if (!data) {
     notFound();
   }
 
-  const isSelf = member.id === claims?.claims.sub;
+  const { member, isSelf } = data;
   const nickname = member.nickname ?? t("fallbackName");
   const city = member.cities;
   const citySlug = city?.slug ?? null;
+  const hasContacts = Boolean(member.contacts?.whatsapp || member.contacts?.telegram);
 
   return (
     <>
-      {city && (
-        <Link href={`/city/${city.slug}`} className={textLinkClass}>
-          ← {cityName(city, locale)}
-        </Link>
-      )}
-
-      <div className="flex items-center gap-4">
-        <Avatar nickname={nickname} />
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-            {nickname}
-          </h1>
+      <div className="flex flex-col items-center gap-4 pt-2 text-center">
+        <Avatar nickname={nickname} size="lg" />
+        <div className="flex flex-col items-center gap-1.5">
+          <h1 className={pageTitleClass}>{nickname}</h1>
           {city && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="flex items-center gap-1.5 text-sm text-ink-muted">
+              <MapPin aria-hidden="true" className="h-4 w-4" />
               {cityName(city, locale)}
             </p>
           )}
@@ -89,29 +115,39 @@ async function Member({
       </div>
 
       {member.bio && (
-        <p className="whitespace-pre-line text-zinc-700 dark:text-zinc-300">
+        <p className={`${cardClass} px-5 py-4 leading-relaxed whitespace-pre-line text-ink`}>
           {member.bio}
         </p>
       )}
 
       {isSelf ? (
         // You can always read your own row, so say what others see instead.
-        <div className="flex flex-col gap-2 rounded-xl bg-zinc-100 p-4 text-sm text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-          <p>
-            {member.is_visible
-              ? t(`self.${reachNote(member.contacts)}`)
-              : t("self.hidden")}
-          </p>
-          <Link href="/settings" className="font-medium underline">
+        <div className="flex flex-col gap-4">
+          <div className={noteClass}>
+            {member.is_visible ? (
+              <Eye aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+            ) : (
+              <EyeOff aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+            )}
+            <p>
+              {member.is_visible
+                ? t(`self.${reachNote(member.contacts)}`)
+                : t("self.hidden")}
+            </p>
+          </div>
+          <Link href="/settings" className={`h-12 w-full ${outlineButtonClass}`}>
+            <Pencil aria-hidden="true" className="h-4 w-4" />
             {t("self.edit")}
           </Link>
         </div>
       ) : (
         <>
-          {member.contacts?.whatsapp || member.contacts?.telegram ? (
-            <ContactButtons nickname={nickname} contacts={member.contacts} />
+          {hasContacts ? (
+            <ContactButtons nickname={nickname} contacts={member.contacts} size="lg" />
           ) : (
-            <p className="text-sm text-zinc-500">{t("noContacts", { nickname })}</p>
+            <p className={`${noteClass} justify-center text-center`}>
+              {t("noContacts", { nickname })}
+            </p>
           )}
           <SafetyActions
             nickname={nickname}
@@ -125,11 +161,23 @@ async function Member({
 }
 
 export default function MemberPage({ params }: PageProps<"/[locale]/member/[id]">) {
+  const tCommon = useTranslations("common");
+
   return (
-    <PageShell>
+    <PageShell
+      back={
+        <Suspense fallback={<BackLink href="/" label={tCommon("back")} />}>
+          <Back params={params} />
+        </Suspense>
+      }
+    >
       <Suspense
         fallback={
-          <div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />
+          <div className="flex flex-col items-center gap-4 pt-2">
+            <div className={`${skeletonClass} h-20 w-20 rounded-full`} />
+            <div className={`${skeletonClass} h-9 w-40 rounded-xl`} />
+            <div className={`${skeletonClass} mt-4 h-24 w-full`} />
+          </div>
         }
       >
         <Member params={params} />

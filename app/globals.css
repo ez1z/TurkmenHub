@@ -1,26 +1,215 @@
 @import "tailwindcss";
 
+/* "Gül": warm ivory paper, Turkmen flag green for actions, and madder red,
+   the classic carpet dye, as a sparing accent. Components use the semantic
+   names below (bg-surface, text-ink-muted, bg-brand…), never raw colours, so
+   dark mode is only these two blocks. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --canvas: #f7f3ec;
+  --surface: #ffffff;
+  --subtle: #efe9df;
+  --line: #e4dcce;
+  --ink: #1d1b17;
+  --ink-muted: #5f584d;
+  --ink-subtle: #8a8275;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --brand: #0e6641;
+  --brand-strong: #0a5234;
+  --brand-soft: #e1efe6;
+  --brand-ink: #0b4f33;
+  --on-brand: #ffffff;
+  /* Big green panels (the home "your city" card). Brand green in light mode;
+     in dark mode a deep forest green, since bright mint that big glares. */
+  --feature: #0e6641;
+  --on-feature: #ffffff;
+
+  --accent: #b3322b;
+  --accent-soft: #f8e5e0;
+
+  --danger: #b42318;
+  --danger-soft: #fbe6e3;
+  --on-danger: #ffffff;
+  --warn-soft: #fbefd5;
+  --warn-ink: #7a4b06;
+
+  --shadow-card: 0 1px 2px rgb(29 27 23 / 0.04), 0 6px 20px -10px rgb(29 27 23 / 0.14);
+
+  /* Avatar tones, picked per nickname (see components/avatar.tsx). */
+  --tone-0: #0e6641;
+  --tone-1: #b3322b;
+  --tone-2: #94600a;
+  --tone-3: #3b4ba0;
+  --tone-4: #0f6b72;
+  --tone-5: #84346f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --canvas: #121110;
+    --surface: #1c1a18;
+    --subtle: #272421;
+    --line: #35312c;
+    --ink: #f4f0e8;
+    --ink-muted: #aca495;
+    --ink-subtle: #7c7468;
+
+    --brand: #46c48b;
+    --brand-strong: #63d6a0;
+    --brand-soft: #16302a;
+    --brand-ink: #86dfb6;
+    --on-brand: #04140c;
+    --feature: #17432f;
+    --on-feature: #e6f5ec;
+
+    --accent: #ef7a6f;
+    --accent-soft: #3a1e1b;
+
+    --danger: #f87160;
+    --danger-soft: #3b1b17;
+    --on-danger: #1a0603;
+    --warn-soft: #3a2a0e;
+    --warn-ink: #f6cf83;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+
+    --tone-0: #5fcf98;
+    --tone-1: #f0877c;
+    --tone-2: #e9b04f;
+    --tone-3: #98a6f2;
+    --tone-4: #5cc7cc;
+    --tone-5: #e08bc9;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-feature: var(--feature);
+  --color-on-feature: var(--on-feature);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-on-danger: var(--on-danger);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-ink: var(--warn-ink);
+
+  --shadow-card: var(--shadow-card);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+  }
+
+  /* Buttons show the hand cursor like links (Tailwind v4 resets it). */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* One focus ring everywhere, only for keyboard users. */
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-optical-sizing: auto;
+  /* Rounder terminals: friendlier than Fraunces' default sharp serif. */
+  font-variation-settings: "SOFT" 60;
+}
+
+/* A thin band of carpet diamonds, like the stripe on the Turkmen flag. It's
+   a mask, so it takes whatever background colour the element sets. */
+@utility carpet-band {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12'%3E%3Cpath fill-rule='evenodd' d='M12 1l6 5-6 5-6-5zm0 3l-2 2 2 2 2-2zM0 4l2 2-2 2zm24 0v4l-2-2z'/%3E%3C/svg%3E")
+    repeat-x center / auto 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12'%3E%3Cpath fill-rule='evenodd' d='M12 1l6 5-6 5-6-5zm0 3l-2 2 2 2 2-2zM0 4l2 2-2 2zm24 0v4l-2-2z'/%3E%3C/svg%3E")
+    repeat-x center / auto 100%;
+}
+
+@layer components {
+  /* Avatar colours: a soft tint of the tone with the tone as the letter. */
+  .tone {
+    background: color-mix(in oklab, var(--tone) 15%, var(--surface));
+    color: var(--tone);
+  }
+  .tone-0 { --tone: var(--tone-0); }
+  .tone-1 { --tone: var(--tone-1); }
+  .tone-2 { --tone: var(--tone-2); }
+  .tone-3 { --tone: var(--tone-3); }
+  .tone-4 { --tone: var(--tone-4); }
+  .tone-5 { --tone: var(--tone-5); }
+
+  /* Dialogs: a bottom sheet on phones, a centred card from sm up. They
+     slide and fade in, and leave a little faster than they arrive. */
+  .sheet {
+    transition:
+      translate 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease-out,
+      overlay 220ms allow-discrete,
+      display 220ms allow-discrete;
+    translate: 0 0;
+    opacity: 1;
+
+    @starting-style {
+      translate: 0 2rem;
+      opacity: 0;
+    }
+
+    &:not([open]) {
+      translate: 0 1.5rem;
+      opacity: 0;
+      transition-duration: 150ms;
+    }
+
+    &::backdrop {
+      background: rgb(18 17 16 / 0.5);
+      transition:
+        opacity 220ms ease-out,
+        overlay 220ms allow-discrete,
+        display 220ms allow-discrete;
+      opacity: 1;
+    }
+
+    &:not([open])::backdrop {
+      opacity: 0;
+    }
+
+    @starting-style {
+      &[open]::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sheet,
+    .sheet::backdrop {
+      transition: none;
+    }
+  }
 }

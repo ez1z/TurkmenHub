@@ -1,5 +1,6 @@
 "use client";
 
+import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -38,6 +39,12 @@ export default function GoogleSignInButton() {
         disabled={loading}
         className={primaryButtonClass}
       >
+        {loading && (
+          <LoaderCircle
+            aria-hidden="true"
+            className="h-5 w-5 animate-spin motion-reduce:animate-none"
+          />
+        )}
         {loading ? t("redirecting") : t("continueWithGoogle")}
       </button>
 

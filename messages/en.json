@@ -13,16 +13,21 @@
     "rules": "Rules",
     "privacy": "Privacy"
   },
+  "flow": {
+    "step": "Step {current} of {total}"
+  },
   "language": {
     "label": "Language"
   },
   "home": {
+    "title": "Cities",
     "settings": "Settings",
     "yourCity": "Your city",
     "otherCities": "Other cities",
     "allCities": "All cities",
     "noCities": "No cities yet.",
-    "memberCount": "{count, plural, one {# member} other {# members}}"
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "summary": "{members, plural, one {# member} other {# members}} in {cities, plural, one {# city} other {# cities}}"
   },
   "city": {
     "allCities": "All cities",
@@ -35,7 +40,7 @@
   },
   "member": {
     "fallbackName": "Member",
-    "you": "(you)",
+    "you": "You",
     "noContacts": "{nickname} hasn't shared any contact details.",
     "self": {
       "hidden": "This is your profile. It's hidden from other members.",
@@ -93,13 +98,18 @@
     "telegramInvalid": "Use 5–32 letters, numbers or underscores."
   },
   "welcome": {
-    "title": "Sign in",
+    "tagline": "Find your people in a new city.",
     "intro": "TurkmenHub helps Turkmens abroad find each other in their city. It's invite-only.",
     "oauthError": "Sign-in failed. Please try again.",
     "deleted": "Your account and everything in it have been deleted.",
     "sessionExpired": "You were signed out because your session expired. Sign in again to continue.",
     "redirecting": "Redirecting…",
-    "continueWithGoogle": "Continue with Google"
+    "continueWithGoogle": "Continue with Google",
+    "points": {
+      "inviteOnly": "Every member joins with an invite code from someone who knows them.",
+      "privacy": "You decide who can see you and who can message you.",
+      "chat": "Message members on WhatsApp or Telegram."
+    }
   },
   "invite": {
     "title": "Enter your invite code",

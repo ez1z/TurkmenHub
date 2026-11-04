@@ -7,13 +7,16 @@ export default function SiteFooter() {
   const t = useTranslations("footer");
 
   return (
-    <footer className="mt-auto flex justify-center gap-4 border-t border-black/[.08] pt-4 dark:border-white/[.145]">
-      <Link href="/rules" className={textLinkClass}>
-        {t("rules")}
-      </Link>
-      <Link href="/privacy" className={textLinkClass}>
-        {t("privacy")}
-      </Link>
+    <footer className="flex flex-col items-center gap-4 px-4 pt-2 pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <span aria-hidden="true" className="carpet-band h-2.5 w-24 bg-line" />
+      <nav className="flex gap-5">
+        <Link href="/rules" className={textLinkClass}>
+          {t("rules")}
+        </Link>
+        <Link href="/privacy" className={textLinkClass}>
+          {t("privacy")}
+        </Link>
+      </nav>
     </footer>
   );
 }

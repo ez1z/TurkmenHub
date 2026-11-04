@@ -1,8 +1,10 @@
 "use client";
 
+import { Check, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useRef, useState } from "react";
 import { cityName } from "@/lib/city-name";
+import { countryName } from "@/lib/country-name";
 
 export type City = {
   id: number;
@@ -12,7 +14,7 @@ export type City = {
 };
 
 const popupClass =
-  "absolute z-10 mt-2 w-full rounded-xl border border-black/[.08] bg-white shadow-lg dark:border-white/[.145] dark:bg-zinc-900";
+  "absolute z-20 mt-2 w-full rounded-2xl border border-line bg-surface shadow-xl";
 
 // Lowercase without accents, so "asgabat" finds "Aşgabat" and "turkmenabat"
 // finds "Türkmenabat". NFD splits ş, ü, ň, ý, ž and ä into a base letter plus
@@ -114,6 +116,10 @@ export default function CityPicker({
   return (
     <div className="relative">
       <input type="hidden" name={name} value={selected?.id ?? ""} />
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-ink-subtle"
+      />
       <input
         id={id}
         type="text"
@@ -143,7 +149,7 @@ export default function CityPicker({
         onClick={() => setOpen(true)}
         onBlur={close}
         onKeyDown={onKeyDown}
-        className={className}
+        className={`${className} pl-11`}
       />
       <ul
         ref={listRef}
@@ -151,7 +157,7 @@ export default function CityPicker({
         role="listbox"
         aria-label={t("listLabel")}
         hidden={!showList || !matches.length}
-        className={`${popupClass} max-h-60 overflow-y-auto py-1`}
+        className={`${popupClass} max-h-64 overflow-y-auto p-1.5`}
       >
         {matches.map((city, index) => (
           <li
@@ -166,19 +172,26 @@ export default function CityPicker({
               pick(city);
             }}
             onMouseMove={() => setActive(index)}
-            className={`flex cursor-pointer items-center justify-between gap-3 px-4 py-2.5 text-black dark:text-zinc-50 ${
-              index === active ? "bg-zinc-100 dark:bg-zinc-800" : ""
+            className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-ink ${
+              index === active ? "bg-subtle" : ""
             }`}
           >
-            <span className={city.id === selected?.id ? "font-medium" : ""}>
-              {label(city)}
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className={`truncate ${city.id === selected?.id ? "font-medium" : ""}`}>
+                {label(city)}
+              </span>
+              <span className="truncate text-xs text-ink-muted">
+                {countryName(city.country_code, locale)}
+              </span>
             </span>
-            <span className="text-xs text-zinc-500">{city.country_code}</span>
+            {city.id === selected?.id && (
+              <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-brand" />
+            )}
           </li>
         ))}
       </ul>
       {showList && !matches.length && (
-        <p className={`${popupClass} px-4 py-2.5 text-sm text-zinc-500`}>
+        <p className={`${popupClass} px-4 py-3 text-sm text-ink-muted`}>
           {t("noMatch", { query: query.trim() })}
         </p>
       )}

@@ -1,5 +1,7 @@
+import { Ticket } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import CopyButton from "@/components/copy-button";
+import { hintClass } from "@/lib/styles";
 import { createClient } from "@/lib/supabase/server";
 
 // The codes redeem_invite() gave this member, and which ones are spent. RLS
@@ -22,34 +24,45 @@ export default async function MyInvites() {
 
   if (!invites?.length) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("none")}</p>
+      <p className={`px-4 py-4 ${hintClass}`}>{t("none")}</p>
     );
   }
 
   const left = invites.filter((invite) => !invite.used_at).length;
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <div className="flex flex-col">
+      <p className={`px-4 pt-4 pb-3 ${hintClass}`}>
         {t("left", { left, total: invites.length })}
       </p>
-      <ul className="flex flex-col divide-y divide-black/[.08] rounded-xl border border-black/[.08] dark:divide-white/[.145] dark:border-white/[.145]">
+      {/* Codes look like tickets: a stub icon, then the code to copy. */}
+      <ul className="flex flex-col divide-y divide-line border-t border-line">
         {invites.map((invite) => (
           <li
             key={invite.code}
-            className="flex h-14 items-center justify-between gap-3 px-4"
+            className="flex min-h-16 items-center justify-between gap-3 px-4 py-2"
           >
-            <span
-              className={`font-mono tracking-widest ${
-                invite.used_at
-                  ? "text-zinc-400 line-through dark:text-zinc-600"
-                  : "text-black dark:text-zinc-50"
-              }`}
-            >
-              {invite.code}
+            <span className="flex min-w-0 items-center gap-3">
+              <span
+                aria-hidden="true"
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                  invite.used_at ? "bg-subtle text-ink-subtle" : "bg-accent-soft text-accent"
+                }`}
+              >
+                <Ticket className="h-4 w-4" />
+              </span>
+              <span
+                className={`truncate font-mono text-[15px] tracking-[0.18em] ${
+                  invite.used_at ? "text-ink-subtle line-through" : "font-medium text-ink"
+                }`}
+              >
+                {invite.code}
+              </span>
             </span>
             {invite.used_at ? (
-              <span className="text-sm text-zinc-500">{t("used")}</span>
+              <span className="rounded-full bg-subtle px-2.5 py-1 text-xs font-medium text-ink-muted">
+                {t("used")}
+              </span>
             ) : (
               <CopyButton
                 text={invite.code}
