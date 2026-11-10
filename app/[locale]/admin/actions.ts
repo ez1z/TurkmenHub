@@ -7,10 +7,11 @@ import {
   type CityFieldErrors,
   type CityFormValues,
 } from "@/lib/city-schema";
+import { isAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type CityFormState = {
-  error: "" | "generic" | "notAllowed";
+  error: "" | "generic" | "notAllowed" | "cityChanged";
   fieldErrors: CityFieldErrors;
   saved: boolean;
   // Echoed back so the form keeps what the admin typed when validation fails.
@@ -18,8 +19,36 @@ export type CityFormState = {
 };
 
 export type RemoveCityState = {
-  error: "" | "generic" | "notAllowed" | "cityHasMembers" | "mergeTargetRequired";
+  error:
+    | ""
+    | "generic"
+    | "notAllowed"
+    | "cityChanged"
+    | "cityHasMembers"
+    | "mergeTargetRequired";
 };
+
+export type MergeCityState = RemoveCityState & {
+  // The picked city, echoed back so the select keeps it when merging fails.
+  into: string;
+};
+
+export type SetAdminState = {
+  error: "" | "generic" | "notAllowed" | "memberNotFound";
+};
+
+type Supabase = Awaited<ReturnType<typeof createClient>>;
+
+// A write RLS doesn't allow matches no rows rather than failing, and so does
+// one on a city another admin has just merged or deleted. Tell them apart,
+// and in the second case reload the list so the admin sees what changed.
+async function noRowsError(supabase: Supabase) {
+  if (!(await isAdmin(supabase).catch(() => false))) {
+    return "notAllowed" as const;
+  }
+  refresh();
+  return "cityChanged" as const;
+}
 
 // Adds a city (cityId null) or edits one. RLS only lets admins write cities,
 // so a member calling this gets "notAllowed" whatever they send.
@@ -47,8 +76,7 @@ export async function saveCity(
   }
 
   const supabase = await createClient();
-  // An update RLS doesn't allow matches no rows rather than failing, so ask
-  // for the row back to tell "saved" from "not allowed".
+  // Ask for the row back to tell "saved" from "matched nothing".
   const { data, error } =
     cityId === null
       ? await supabase.from("cities").insert(parsed.data).select("id")
@@ -59,8 +87,11 @@ export async function saveCity(
     return { error: "", fieldErrors: { slug: ["slugTaken"] }, saved: false, values };
   }
   // 42501: the insert policy turned a non-admin away.
-  if (error?.code === "42501" || (!error && !data?.length)) {
+  if (error?.code === "42501") {
     return { error: "notAllowed", fieldErrors: {}, saved: false, values };
+  }
+  if (!error && !data?.length) {
+    return { error: await noRowsError(supabase), fieldErrors: {}, saved: false, values };
   }
   if (error) {
     return { error: "generic", fieldErrors: {}, saved: false, values };
@@ -71,7 +102,8 @@ export async function saveCity(
 }
 
 // Deletes a city nobody lives in. Members' city_id keeps a city that's in
-// use from being deleted (23503), and then it has to be merged instead.
+// use from being deleted (23503), and then it has to be merged instead:
+// someone moved in since the list loaded, so reload it to offer the merge.
 export async function deleteCity(cityId: number): Promise<RemoveCityState> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -81,10 +113,11 @@ export async function deleteCity(cityId: number): Promise<RemoveCityState> {
     .select("id");
 
   if (error?.code === "23503") {
+    refresh();
     return { error: "cityHasMembers" };
   }
   if (!error && !data?.length) {
-    return { error: "notAllowed" };
+    return { error: await noRowsError(supabase) };
   }
   if (error) {
     return { error: "generic" };
@@ -98,12 +131,13 @@ export async function deleteCity(cityId: number): Promise<RemoveCityState> {
 // cityId (see merge_cities() in the migrations).
 export async function mergeCity(
   cityId: number,
-  _prevState: RemoveCityState,
+  _prevState: MergeCityState,
   formData: FormData,
-): Promise<RemoveCityState> {
-  const into = Number(formData.get("into_city"));
+): Promise<MergeCityState> {
+  const picked = String(formData.get("into_city") ?? "");
+  const into = Number(picked);
   if (!Number.isInteger(into) || into <= 0 || into === cityId) {
-    return { error: "mergeTargetRequired" };
+    return { error: "mergeTargetRequired", into: picked };
   }
 
   const supabase = await createClient();
@@ -113,7 +147,40 @@ export async function mergeCity(
   });
 
   if (error?.code === "42501") {
+    return { error: "notAllowed", into: picked };
+  }
+  // P0002: one of the two cities was just merged or deleted by another admin.
+  if (error?.code === "P0002") {
+    refresh();
+    return { error: "cityChanged", into: picked };
+  }
+  if (error) {
+    return { error: "generic", into: picked };
+  }
+
+  refresh();
+  return { error: "", into: "" };
+}
+
+// Makes a member an admin, or stops them being one. Only the superuser may
+// (see set_admin() in the migrations).
+export async function setAdmin(
+  memberId: string,
+  makeAdmin: boolean,
+): Promise<SetAdminState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_admin", {
+    member: memberId,
+    make_admin: makeAdmin,
+  });
+
+  if (error?.code === "42501") {
     return { error: "notAllowed" };
+  }
+  // P0002: they deleted their account or lost verification since the list loaded.
+  if (error?.code === "P0002") {
+    refresh();
+    return { error: "memberNotFound" };
   }
   if (error) {
     return { error: "generic" };

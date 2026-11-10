@@ -99,6 +99,9 @@
     "notAllowed": "Only admins can do that.",
     "cityHasMembers": "People still live in this city. Merge it into another city instead.",
     "mergeTargetRequired": "Choose the city to move members to.",
+    "cityChanged": "Another admin has just changed the cities. The list is up to date now, so check it and try again.",
+    "memberRequired": "Choose a member.",
+    "memberNotFound": "That member can't be made an admin any more.",
     "cityNameRequired": "Enter the city's name.",
     "cityNameMax": "Keep the name to 60 characters or fewer.",
     "slugInvalid": "Use lowercase letters, numbers and dashes, like kuala-lumpur.",
@@ -283,7 +286,6 @@
     "addCountryHint": "A country appears once it has a city, so add its first city here.",
     "addCityIn": "Add a city in {country}",
     "editCity": "Edit {city}",
-    "edit": "Edit",
     "cityCount": "{count, plural, one {# city} other {# cities}}",
     "memberCount": "{count, plural, =0 {No members} one {# member} other {# members}}",
     "empty": "No cities yet. Add a country to get started.",
@@ -319,6 +321,20 @@
       "chooseCity": "Choose a city",
       "mergeConfirm": "Merge and remove {city}",
       "merging": "Merging…"
+    },
+    "team": {
+      "title": "Admins",
+      "intro": "Admins can add, edit, merge and delete cities. Only you can choose who they are.",
+      "superuser": "Superuser",
+      "remove": "Remove",
+      "removing": "Removing…",
+      "removeLabel": "Remove {name} as admin",
+      "addLabel": "Make a member an admin",
+      "chooseMember": "Choose a member",
+      "add": "Make admin",
+      "adding": "Adding…",
+      "hint": "Only members with a visible profile are listed.",
+      "noCandidates": "Every visible member is already an admin."
     }
   }
 }

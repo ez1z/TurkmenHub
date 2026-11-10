@@ -99,6 +99,9 @@
     "notAllowed": "Muny diňe adminler edip bilýär.",
     "cityHasMembers": "Bu şäherde entek agzalar ýaşaýar. Ony başga şäher bilen birleşdiriň.",
     "mergeTargetRequired": "Agzalaryň geçjek şäherini saýlaň.",
+    "cityChanged": "Başga bir admin şäherleri ýaňy üýtgetdi. Sanaw täzelendi, barlap gaýtadan synanyşyň.",
+    "memberRequired": "Agzany saýlaň.",
+    "memberNotFound": "Bu agzany indi admin edip bolmaýar.",
     "cityNameRequired": "Şäheriň adyny giriziň.",
     "cityNameMax": "At 60 harpdan köp bolmaly däl.",
     "slugInvalid": "Kiçi harplary, sanlary we defisi ulanyň, meselem, kuala-lumpur.",
@@ -283,7 +286,6 @@
     "addCountryHint": "Ýurt şäheri bolanda görünýär, şonuň üçin onuň ilkinji şäherini şu ýerde goşuň.",
     "addCityIn": "Şäher goşuň: {country}",
     "editCity": "Şäheri üýtgediň: {city}",
-    "edit": "Üýtget",
     "cityCount": "{count} şäher",
     "memberCount": "{count, plural, =0 {Agza ýok} other {{count} agza}}",
     "empty": "Entek şäher ýok. Başlamak üçin ýurt goşuň.",
@@ -319,6 +321,20 @@
       "chooseCity": "Şäheri saýlaň",
       "mergeConfirm": "Birleşdiriň we aýryň",
       "merging": "Birleşdirilýär…"
+    },
+    "team": {
+      "title": "Adminler",
+      "intro": "Adminler şäherleri goşup, üýtgedip, birleşdirip we pozup bilýärler. Olary diňe siz saýlap bilýärsiňiz.",
+      "superuser": "Baş admin",
+      "remove": "Aýryň",
+      "removing": "Aýrylýar…",
+      "removeLabel": "{name} adminlikden aýryň",
+      "addLabel": "Agzany admin ediň",
+      "chooseMember": "Agzany saýlaň",
+      "add": "Admin ediň",
+      "adding": "Goşulýar…",
+      "hint": "Diňe profili görünýän agzalar sanawda.",
+      "noCandidates": "Görünýän agzalaryň hemmesi eýýäm admin."
     }
   }
 }

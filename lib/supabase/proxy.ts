@@ -4,6 +4,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
 import { isAdmin } from "@/lib/admin";
+import { SLUG_PATTERN } from "@/lib/city-schema";
 import {
   isReturnPath,
   RETURN_TO_COOKIE,
@@ -50,7 +51,6 @@ const CITY_PAGE = /^\/city\/([^/]+)$/;
 const MEMBER_PAGE = /^\/member\/([^/]+)$/;
 const ADMIN_PAGE = "/admin";
 // Anything else can't match a row, so it's not found without a query.
-const SLUG = /^[a-z0-9-]+$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Whether a city, member or admin page has anything to show this viewer. Same RLS
@@ -63,7 +63,7 @@ async function pageExists(
 ): Promise<boolean> {
   const city = CITY_PAGE.exec(pathname);
   if (city) {
-    if (!SLUG.test(city[1])) {
+    if (!SLUG_PATTERN.test(city[1])) {
       return false;
     }
     const { data, error } = await supabase

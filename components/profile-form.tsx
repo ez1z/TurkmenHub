@@ -3,13 +3,14 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useActionState } from "react";
 import CityPicker, { type City } from "@/components/city-picker";
+import { describedBy, FieldMessage } from "@/components/field-message";
 import {
   completeOnboarding,
   updateSettings,
   type ProfileFormState,
 } from "@/lib/profile-actions";
 import type { ErrorKey } from "@/lib/error-key";
-import type { ProfileFieldErrors, ProfileFormValues } from "@/lib/profile-schema";
+import type { ProfileFormValues } from "@/lib/profile-schema";
 import {
   errorTextClass,
   fieldClass,
@@ -22,44 +23,6 @@ import {
 const legendClass = "mb-4 font-display text-xl font-semibold tracking-tight text-ink";
 const prefixClass =
   "pointer-events-none absolute inset-y-0 left-4 flex items-center text-ink-muted";
-
-// The id of the message under a field: its error if it has one, else its hint.
-function describedBy(
-  name: keyof ProfileFieldErrors,
-  fieldErrors: ProfileFieldErrors,
-  hasHint = false,
-) {
-  if (fieldErrors[name]) {
-    return `${name}-error`;
-  }
-  return hasHint ? `${name}-hint` : undefined;
-}
-
-function FieldMessage({
-  name,
-  fieldErrors,
-  hint,
-}: {
-  name: keyof ProfileFieldErrors;
-  fieldErrors: ProfileFieldErrors;
-  hint?: string;
-}) {
-  const tErrors = useTranslations("errors");
-
-  if (fieldErrors[name]) {
-    // The schema's messages are keys in "errors" (see lib/profile-schema.ts).
-    return (
-      <p id={`${name}-error`} className={errorTextClass}>
-        {tErrors(fieldErrors[name][0] as ErrorKey)}
-      </p>
-    );
-  }
-  return hint ? (
-    <p id={`${name}-hint`} className={hintClass}>
-      {hint}
-    </p>
-  ) : null;
-}
 
 function Switch({
   name,
@@ -140,10 +103,10 @@ export default function ProfileForm({
             maxLength={30}
             defaultValue={values.nickname}
             aria-invalid={fieldErrors.nickname ? true : undefined}
-            aria-describedby={describedBy("nickname", fieldErrors)}
+            aria-describedby={describedBy("nickname", fieldErrors.nickname)}
             className={`h-12 ${fieldClass}`}
           />
-          <FieldMessage name="nickname" fieldErrors={fieldErrors} />
+          <FieldMessage id="nickname" errors={fieldErrors.nickname} />
         </div>
 
         <div className="flex flex-col gap-2">
@@ -156,12 +119,12 @@ export default function ProfileForm({
             cities={cities}
             defaultValue={values.city_id}
             invalid={Boolean(fieldErrors.city_id)}
-            describedBy={describedBy("city_id", fieldErrors, true)}
+            describedBy={describedBy("city_id", fieldErrors.city_id, true)}
             className={`h-12 ${fieldClass}`}
           />
           <FieldMessage
-            name="city_id"
-            fieldErrors={fieldErrors}
+            id="city_id"
+            errors={fieldErrors.city_id}
             hint={t("cityHint")}
           />
         </div>
@@ -178,12 +141,12 @@ export default function ProfileForm({
             defaultValue={values.bio}
             placeholder={t("bioPlaceholder")}
             aria-invalid={fieldErrors.bio ? true : undefined}
-            aria-describedby={describedBy("bio", fieldErrors, true)}
+            aria-describedby={describedBy("bio", fieldErrors.bio, true)}
             className={`resize-none py-3 ${fieldClass}`}
           />
           <FieldMessage
-            name="bio"
-            fieldErrors={fieldErrors}
+            id="bio"
+            errors={fieldErrors.bio}
             hint={t("bioHint")}
           />
         </div>
@@ -221,13 +184,13 @@ export default function ProfileForm({
               defaultValue={values.whatsapp}
               placeholder="60 12 345 6789"
               aria-invalid={fieldErrors.whatsapp ? true : undefined}
-              aria-describedby={describedBy("whatsapp", fieldErrors, true)}
+              aria-describedby={describedBy("whatsapp", fieldErrors.whatsapp, true)}
               className={`h-12 pl-8 ${fieldClass}`}
             />
           </div>
           <FieldMessage
-            name="whatsapp"
-            fieldErrors={fieldErrors}
+            id="whatsapp"
+            errors={fieldErrors.whatsapp}
             hint={t("whatsappHint")}
           />
         </div>
@@ -251,11 +214,11 @@ export default function ProfileForm({
               defaultValue={values.telegram}
               placeholder={t("telegramPlaceholder")}
               aria-invalid={fieldErrors.telegram ? true : undefined}
-              aria-describedby={describedBy("telegram", fieldErrors)}
+              aria-describedby={describedBy("telegram", fieldErrors.telegram)}
               className={`h-12 pl-9 ${fieldClass}`}
             />
           </div>
-          <FieldMessage name="telegram" fieldErrors={fieldErrors} />
+          <FieldMessage id="telegram" errors={fieldErrors.telegram} />
         </div>
 
         <Switch

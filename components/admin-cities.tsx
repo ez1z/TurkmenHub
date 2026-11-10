@@ -8,22 +8,18 @@ import {
   mergeCity,
   saveCity,
   type CityFormState,
+  type MergeCityState,
   type RemoveCityState,
 } from "@/app/[locale]/admin/actions";
+import { describedBy, FieldMessage } from "@/components/field-message";
 import Modal from "@/components/modal";
-import {
-  slugify,
-  type CityFieldErrors,
-  type CityFormValues,
-} from "@/lib/city-schema";
-import type { ErrorKey } from "@/lib/error-key";
+import { slugify, type CityFormValues } from "@/lib/city-schema";
 import {
   cardClass,
   dangerButtonClass,
   errorTextClass,
   fieldClass,
   ghostButtonClass,
-  hintClass,
   labelClass,
   leadClass,
   outlineButtonClass,
@@ -60,6 +56,7 @@ const cancelButtonClass = `h-12 w-full ${outlineButtonClass}`;
 const bodyClass = "text-sm leading-relaxed text-ink-muted";
 const selectClass = `h-12 ${fieldClass}`;
 const initialRemove: RemoveCityState = { error: "" };
+const initialMerge: MergeCityState = { error: "", into: "" };
 
 const emptyCity: CityFormValues = {
   name_en: "",
@@ -95,16 +92,27 @@ export default function AdminCities({
   const countryLabel = (code: string) =>
     countryOptions.find((option) => option.code === code)?.name ?? code;
 
+  // The open city as the list now has it: an action that fails because the
+  // city changed reloads the list, and the dialog should show what's true
+  // now (e.g. that people live there, so it can only be merged). Once it's
+  // gone, keep the copy from when the dialog opened.
+  const city =
+    dialog?.kind === "edit"
+      ? (countries
+          .flatMap((country) => country.cities)
+          .find((other) => other.id === dialog.city.id) ?? dialog.city)
+      : null;
+
   let title = "";
   if (dialog?.kind === "add") {
     title = dialog.country
       ? t("addCityIn", { country: countryLabel(dialog.country) })
       : t("addCountryTitle");
-  } else if (dialog?.kind === "edit") {
+  } else if (dialog?.kind === "edit" && city) {
     title = {
-      edit: t("editCity", { city: dialog.city.name }),
-      delete: t("remove.deleteTitle", { city: dialog.city.name }),
-      merge: t("remove.mergeTitle", { city: dialog.city.name }),
+      edit: t("editCity", { city: city.name }),
+      delete: t("remove.deleteTitle", { city: city.name }),
+      merge: t("remove.mergeTitle", { city: city.name }),
     }[dialog.view];
   }
 
@@ -168,43 +176,43 @@ export default function AdminCities({
             onDone={close}
           />
         )}
-        {dialog?.kind === "edit" && dialog.view === "edit" && (
+        {dialog?.kind === "edit" && city && dialog.view === "edit" && (
           <>
             <CityForm
               key={formKey}
-              cityId={dialog.city.id}
+              cityId={city.id}
               initialValues={{
-                name_en: dialog.city.name_en,
-                name_tk: dialog.city.name_tk,
-                slug: dialog.city.slug,
-                country_code: dialog.city.country_code,
-                group_url: dialog.city.group_url ?? "",
+                name_en: city.name_en,
+                name_tk: city.name_tk,
+                slug: city.slug,
+                country_code: city.country_code,
+                group_url: city.group_url ?? "",
               }}
               countryOptions={countryOptions}
               onCancel={close}
               onDone={close}
             />
             <RemoveChoice
-              city={dialog.city}
+              city={city}
               canMerge={countries.some((country) =>
-                country.cities.some((city) => city.id !== dialog.city.id),
+                country.cities.some((other) => other.id !== city.id),
               )}
               onPick={(view) => setDialog({ ...dialog, view })}
             />
           </>
         )}
-        {dialog?.kind === "edit" && dialog.view === "delete" && (
+        {dialog?.kind === "edit" && city && dialog.view === "delete" && (
           <DeleteCity
             key={formKey}
-            city={dialog.city}
+            city={city}
             onBack={() => setDialog({ ...dialog, view: "edit" })}
             onDone={close}
           />
         )}
-        {dialog?.kind === "edit" && dialog.view === "merge" && (
+        {dialog?.kind === "edit" && city && dialog.view === "merge" && (
           <MergeCity
             key={formKey}
-            city={dialog.city}
+            city={city}
             countries={countries}
             onBack={() => setDialog({ ...dialog, view: "edit" })}
             onDone={close}
@@ -245,40 +253,6 @@ function CityRow({ city, onEdit }: { city: AdminCity; onEdit: () => void }) {
       </span>
     </button>
   );
-}
-
-// The id of the message under a field: its error if it has one, else its hint.
-function describedBy(name: keyof CityFieldErrors, fieldErrors: CityFieldErrors, hasHint = false) {
-  if (fieldErrors[name]) {
-    return `city-${name}-error`;
-  }
-  return hasHint ? `city-${name}-hint` : undefined;
-}
-
-function FieldMessage({
-  name,
-  fieldErrors,
-  hint,
-}: {
-  name: keyof CityFieldErrors;
-  fieldErrors: CityFieldErrors;
-  hint?: React.ReactNode;
-}) {
-  const tErrors = useTranslations("errors");
-
-  if (fieldErrors[name]) {
-    // The schema's messages are keys in "errors" (see lib/city-schema.ts).
-    return (
-      <p id={`city-${name}-error`} className={errorTextClass}>
-        {tErrors(fieldErrors[name][0] as ErrorKey)}
-      </p>
-    );
-  }
-  return hint ? (
-    <p id={`city-${name}-hint`} className={hintClass}>
-      {hint}
-    </p>
-  ) : null;
 }
 
 // Adds a city (cityId null) or edits one. The dialog closes once it's saved,
@@ -338,7 +312,7 @@ function CityForm({
           required
           defaultValue={values.country_code}
           aria-invalid={fieldErrors.country_code ? true : undefined}
-          aria-describedby={describedBy("country_code", fieldErrors)}
+          aria-describedby={describedBy("city-country_code", fieldErrors.country_code)}
           className={selectClass}
         >
           <option value="">
@@ -350,7 +324,7 @@ function CityForm({
             </option>
           ))}
         </select>
-        <FieldMessage name="country_code" fieldErrors={fieldErrors} />
+        <FieldMessage id="city-country_code" errors={fieldErrors.country_code} />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -372,10 +346,10 @@ function CityForm({
             }
           }}
           aria-invalid={fieldErrors.name_en ? true : undefined}
-          aria-describedby={describedBy("name_en", fieldErrors)}
+          aria-describedby={describedBy("city-name_en", fieldErrors.name_en)}
           className={`h-12 ${fieldClass}`}
         />
-        <FieldMessage name="name_en" fieldErrors={fieldErrors} />
+        <FieldMessage id="city-name_en" errors={fieldErrors.name_en} />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -391,10 +365,10 @@ function CityForm({
           autoComplete="off"
           defaultValue={values.name_tk}
           aria-invalid={fieldErrors.name_tk ? true : undefined}
-          aria-describedby={describedBy("name_tk", fieldErrors, true)}
+          aria-describedby={describedBy("city-name_tk", fieldErrors.name_tk, true)}
           className={`h-12 ${fieldClass}`}
         />
-        <FieldMessage name="name_tk" fieldErrors={fieldErrors} hint={t("nameTkHint")} />
+        <FieldMessage id="city-name_tk" errors={fieldErrors.name_tk} hint={t("nameTkHint")} />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -416,12 +390,12 @@ function CityForm({
             setSlugEdited(true);
           }}
           aria-invalid={fieldErrors.slug ? true : undefined}
-          aria-describedby={describedBy("slug", fieldErrors, true)}
+          aria-describedby={describedBy("city-slug", fieldErrors.slug, true)}
           className={`h-12 font-mono text-[15px] ${fieldClass}`}
         />
         <FieldMessage
-          name="slug"
-          fieldErrors={fieldErrors}
+          id="city-slug"
+          errors={fieldErrors.slug}
           hint={
             <>
               {t("slugHint", { slug: slug || "…" })}
@@ -445,10 +419,10 @@ function CityForm({
           placeholder="https://chat.whatsapp.com/…"
           defaultValue={values.group_url}
           aria-invalid={fieldErrors.group_url ? true : undefined}
-          aria-describedby={describedBy("group_url", fieldErrors, true)}
+          aria-describedby={describedBy("city-group_url", fieldErrors.group_url, true)}
           className={`h-12 ${fieldClass}`}
         />
-        <FieldMessage name="group_url" fieldErrors={fieldErrors} hint={t("groupUrlHint")} />
+        <FieldMessage id="city-group_url" errors={fieldErrors.group_url} hint={t("groupUrlHint")} />
       </div>
 
       {state.error && (
@@ -561,14 +535,14 @@ function MergeCity({
   const t = useTranslations("admin.remove");
   const tErrors = useTranslations("errors");
   const [state, formAction, pending] = useActionState(
-    async (prevState: RemoveCityState, formData: FormData) => {
+    async (prevState: MergeCityState, formData: FormData) => {
       const next = await mergeCity(city.id, prevState, formData);
       if (!next.error) {
         onDone();
       }
       return next;
     },
-    initialRemove,
+    initialMerge,
   );
 
   const groups = [...countries]
@@ -588,11 +562,13 @@ function MergeCity({
         <label htmlFor="merge-into" className={labelClass}>
           {t("mergeInto")}
         </label>
+        {/* Keyed on the echoed pick, like the country select in CityForm. */}
         <select
+          key={state.into}
           id="merge-into"
           name="into_city"
           required
-          defaultValue=""
+          defaultValue={state.into}
           aria-invalid={state.error === "mergeTargetRequired" ? true : undefined}
           className={selectClass}
         >

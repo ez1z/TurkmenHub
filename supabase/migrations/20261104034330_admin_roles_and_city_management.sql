@@ -50,12 +50,111 @@ grant select on public.admins to authenticated;
 
 alter table public.admins enable row level security;
 
--- Enough for the app to know whether to show the Admin page. Admins are
--- added by the superuser (or, for the superuser, by hand in SQL).
+-- Admins are added and removed only through set_admin() below, by the
+-- superuser. The superuser's own row is added by hand in SQL.
 create policy "Users can read their own admin row"
   on public.admins for select
   to authenticated
   using (profile_id = (select auth.uid()));
+
+create function private.is_superuser()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.admins a
+    join public.profiles p on p.id = a.profile_id
+    where a.profile_id = (select auth.uid())
+      and a.is_superuser
+      and p.verified_at is not null
+  );
+$$;
+
+revoke execute on function private.is_superuser() from public, anon;
+grant execute on function private.is_superuser() to authenticated;
+
+-- The caller's role, 'superuser', 'admin' or null, for the app to decide what
+-- to show. Same rules as is_admin(), so the app and RLS never disagree.
+create function public.my_admin_role()
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case
+    when (select private.is_superuser()) then 'superuser'
+    when (select private.is_admin()) then 'admin'
+  end;
+$$;
+
+revoke execute on function public.my_admin_role() from public, anon;
+grant execute on function public.my_admin_role() to authenticated;
+
+-------------------------------------------------------------------------------
+-- The superuser picks the admins
+-------------------------------------------------------------------------------
+
+-- Current admins, and the visible members who could become one (a hidden
+-- member chose not to be seen, so they aren't listed). Returns nothing for
+-- anyone but the superuser.
+create function public.superuser_members()
+returns table (
+  id uuid,
+  nickname text,
+  is_admin boolean,
+  is_superuser boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id, p.nickname, a.profile_id is not null, coalesce(a.is_superuser, false)
+  from public.profiles p
+  left join public.admins a on a.profile_id = p.id
+  where (select private.is_superuser())
+    and p.verified_at is not null
+    and p.nickname is not null
+    and (p.is_visible or a.profile_id is not null);
+$$;
+
+revoke execute on function public.superuser_members() from public, anon;
+grant execute on function public.superuser_members() to authenticated;
+
+-- Makes a verified member an admin, or stops them being one. The superuser's
+-- own row can't be changed this way.
+create function public.set_admin(member uuid, make_admin boolean)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not (select private.is_superuser()) then
+    raise exception 'Not allowed' using errcode = '42501';
+  end if;
+
+  if make_admin then
+    if not exists (
+      select 1 from public.profiles where id = member and verified_at is not null
+    ) then
+      raise exception 'Member not found' using errcode = 'P0002';
+    end if;
+    insert into public.admins (profile_id) values (member)
+    on conflict (profile_id) do nothing;
+  else
+    delete from public.admins where profile_id = member and not is_superuser;
+  end if;
+end;
+$$;
+
+revoke execute on function public.set_admin(uuid, boolean) from public, anon;
+grant execute on function public.set_admin(uuid, boolean) to authenticated;
 
 -------------------------------------------------------------------------------
 -- Cities: admins add, edit and delete them

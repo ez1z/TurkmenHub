@@ -304,7 +304,21 @@ export type Database = {
         Args: { from_city: number; into_city: number }
         Returns: undefined
       }
+      my_admin_role: { Args: never; Returns: string }
       redeem_invite: { Args: { invite_code: string }; Returns: undefined }
+      set_admin: {
+        Args: { make_admin: boolean; member: string }
+        Returns: undefined
+      }
+      superuser_members: {
+        Args: never
+        Returns: {
+          id: string
+          is_admin: boolean
+          is_superuser: boolean
+          nickname: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

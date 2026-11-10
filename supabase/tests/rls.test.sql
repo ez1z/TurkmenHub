@@ -19,7 +19,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(58);
+select plan(73);
 
 -------------------------------------------------------------------------------
 -- Fixtures
@@ -354,6 +354,7 @@ update public.profiles set verified_at = null where id = 'b0000000-0000-0000-000
 set local role authenticated;
 
 select is_empty('select * from public.admin_cities()', 'an unverified admin gets no admin city list');
+select is(public.my_admin_role(), null, 'an unverified admin has no admin role');
 
 reset role;
 update public.profiles set verified_at = now() where id = 'b0000000-0000-0000-0000-000000000000';
@@ -365,7 +366,65 @@ select throws_ok(
   '23505', null,
   'there can be only one superuser'
 );
+
+-------------------------------------------------------------------------------
+-- The superuser picks the admins; nobody else can
+-------------------------------------------------------------------------------
+
+-- Frank is the superuser. Any superuser already in the database steps aside
+-- for the test (rolled back with everything else).
+delete from public.admins where is_superuser;
+insert into public.admins (profile_id, is_superuser)
+values ('f0000000-0000-0000-0000-000000000000', true);
 set local role authenticated;
+
+select is(public.my_admin_role(), 'admin', 'an admin has the admin role');
+select throws_ok(
+  $$ select public.set_admin('a0000000-0000-0000-0000-000000000000', true) $$,
+  '42501', 'Not allowed',
+  'an admin cannot appoint admins'
+);
+select is_empty('select * from public.superuser_members()', 'an admin gets no member list');
+
+set local request.jwt.claims to '{"sub":"a0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+select is(public.my_admin_role(), null, 'a member has no admin role');
+
+set local request.jwt.claims to '{"sub":"f0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+select is(public.my_admin_role(), 'superuser', 'the superuser has the superuser role');
+select results_eq(
+  $$ select nickname, is_admin, is_superuser from public.superuser_members()
+     where id in ('a0000000-0000-0000-0000-000000000000', 'b0000000-0000-0000-0000-000000000000',
+                  'c0000000-0000-0000-0000-000000000000', 'f0000000-0000-0000-0000-000000000000')
+     order by nickname $$,
+  $$ values ('Alice'::text, false, false), ('Bob', true, false), ('Frank', true, true) $$,
+  'the superuser sees the admins and visible members, not hidden ones'
+);
+select lives_ok(
+  $$ select public.set_admin('a0000000-0000-0000-0000-000000000000', true) $$,
+  'the superuser can make a member an admin'
+);
+select throws_ok(
+  $$ select public.set_admin('90000000-0000-0000-0000-000000000000', true) $$,
+  'P0002', 'Member not found',
+  'an unverified user cannot be made an admin'
+);
+select lives_ok(
+  $$ select public.set_admin('f0000000-0000-0000-0000-000000000000', false) $$,
+  'removing the superuser is a no-op'
+);
+select is(public.my_admin_role(), 'superuser', 'the superuser stays the superuser');
+
+set local request.jwt.claims to '{"sub":"a0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+select is(public.my_admin_role(), 'admin', 'a new admin has the admin role');
+
+set local request.jwt.claims to '{"sub":"f0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+select lives_ok(
+  $$ select public.set_admin('a0000000-0000-0000-0000-000000000000', false) $$,
+  'the superuser can remove an admin'
+);
+
+set local request.jwt.claims to '{"sub":"a0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+select is(public.my_admin_role(), null, 'a removed admin has no admin role');
 
 -------------------------------------------------------------------------------
 -- delete_account: nothing that points at the member survives
@@ -451,6 +510,11 @@ select throws_ok(
   'select * from public.admin_cities()',
   '42501', null,
   'anon cannot call admin_cities'
+);
+select throws_ok(
+  $$ select public.set_admin('90000000-0000-0000-0000-000000000000', true) $$,
+  '42501', null,
+  'anon cannot call set_admin'
 );
 select is(public.keep_alive(), 1, 'anon can call keep_alive');
 
