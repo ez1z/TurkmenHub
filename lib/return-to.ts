@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 
 // Remembers the shared link (a city or member page) someone opened before
-// signing in, so they land there once sign-in, invite and onboarding are done.
+// signing in, so they land there once sign-in and onboarding are done.
 // A cookie rather than a ?next= param, because it has to survive the Google
 // round trip and every setup step in between.
 export const RETURN_TO_COOKIE = "return_to";
 
-// Long enough to go and ask a friend for an invite code.
+// Long enough to come back to a sign-up left halfway.
 export const RETURN_TO_MAX_AGE = 60 * 60 * 24;
 
 // Only pages worth sharing. Anything else (and anything that isn't a plain

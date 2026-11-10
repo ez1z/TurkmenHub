@@ -22,8 +22,8 @@ export async function GET(request: Request) {
   }
 
   // Back to the shared link the user opened, if any. If they still have setup
-  // steps left, the proxy sends them on to /invite or /onboarding and
-  // remembers the link again.
+  // steps left, the proxy sends them on to /onboarding and remembers the link
+  // again.
   const response = NextResponse.redirect(new URL(await takeReturnTo(), origin));
 
   // First sign-in on this browser: use the language saved on the profile.
@@ -35,11 +35,12 @@ export async function GET(request: Request) {
   if (!hasLocaleCookie) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("locale, verified_at")
+      .select("locale, nickname")
       .eq("id", data.user.id)
       .maybeSingle();
-    // A brand-new profile only has the column default, not a choice.
-    if (profile?.verified_at && hasLocale(routing.locales, profile.locale)) {
+    // A profile that hasn't been through onboarding only has the column
+    // default, not a choice.
+    if (profile?.nickname && hasLocale(routing.locales, profile.locale)) {
       response.cookies.set(LOCALE_COOKIE.name, profile.locale, {
         path: "/",
         sameSite: "lax",

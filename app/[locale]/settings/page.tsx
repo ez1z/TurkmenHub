@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import DeleteAccount from "@/components/delete-account";
 import LanguageSwitcher from "@/components/language-switcher";
-import MyInvites from "@/components/my-invites";
 import PageShell, { BackLink } from "@/components/page-shell";
 import ProfileFormLoader from "@/components/profile-form-loader";
 import { signOut } from "@/lib/account-actions";
@@ -24,15 +23,13 @@ function Group({
   id,
   title,
   children,
-  className = "",
 }: {
   id: string;
   title: string;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <section aria-labelledby={id} className={`flex flex-col gap-3 ${className}`}>
+    <section aria-labelledby={id} className="flex flex-col gap-3">
       <h2 id={id} className={sectionLabelClass}>
         {title}
       </h2>
@@ -88,14 +85,6 @@ export default function SettingsPage() {
         <div className="p-3">
           <LanguageSwitcher />
         </div>
-      </Group>
-
-      {/* scroll-mt so the "invite someone" link from an empty city doesn't
-          land with the heading under the sticky top bar. */}
-      <Group id="my-invites" title={t("invites")} className="scroll-mt-20">
-        <Suspense fallback={<div className={`${skeletonClass} h-48 rounded-none`} />}>
-          <MyInvites />
-        </Suspense>
       </Group>
 
       <Suspense fallback={null}>

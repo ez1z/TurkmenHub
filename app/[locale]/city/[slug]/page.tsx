@@ -1,17 +1,16 @@
-import { ExternalLink, MapPin, Sparkles, Ticket, Users } from "lucide-react";
+import { ExternalLink, MapPin, Sparkles, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import BrandMark from "@/components/brand-mark";
+import CopyLinkButton from "@/components/copy-link-button";
 import MemberCard, { type Member } from "@/components/member-card";
 import PageShell, { BackLink } from "@/components/page-shell";
 import { cityName } from "@/lib/city-name";
 import { countryName } from "@/lib/country-name";
 import {
   cardClass,
-  outlineButtonClass,
   pageTitleClass,
   primaryButtonClass,
   sectionLabelClass,
@@ -155,13 +154,10 @@ async function City({ params }: { params: PageProps<"/[locale]/city/[slug]">["pa
             <p className="max-w-xs text-sm leading-relaxed text-ink-muted text-pretty">
               {onlyYou ? t("onlyYou", { city: name }) : t("empty", { city: name })}
             </p>
-            <Link
-              href="/settings#my-invites"
-              className={`h-10 px-4 ${outlineButtonClass}`}
-            >
-              <Ticket aria-hidden="true" className="h-4 w-4" />
-              {t("inviteSomeone")}
-            </Link>
+            <CopyLinkButton
+              path={`/city/${slug}`}
+              label={t("copyLinkLabel", { city: name })}
+            />
           </div>
         </section>
       )}

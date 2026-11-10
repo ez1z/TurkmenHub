@@ -3,8 +3,8 @@ import { updateSession } from "@/lib/supabase/proxy";
 
 // Next.js 16 renamed middleware.ts to proxy.ts. Runs before every matched
 // request to keep the Supabase session fresh, to send users who haven't
-// finished signing up to /welcome, /invite or /onboarding, and to pick the
-// language (see i18n/routing.ts).
+// finished signing up to /welcome or /onboarding, and to pick the language
+// (see i18n/routing.ts).
 export async function proxy(request: NextRequest) {
   return await updateSession(request);
 }

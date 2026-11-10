@@ -2,7 +2,7 @@
 
 > Land in a new city and find your people in a minute.
 
-TurkmenHub is an invite-only web app that helps Turkmens living abroad find each other. Someone who just moved to a city can see which Turkmens already live there. They can also message the ones who chose to be reachable, on WhatsApp or Telegram.
+TurkmenHub is a web app that helps Turkmens living abroad find each other. Someone who just moved to a city can see which Turkmens already live there. They can also message the ones who chose to be reachable, on WhatsApp or Telegram.
 
 **Live:** https://turkmen-hub.vercel.app
 
@@ -41,24 +41,22 @@ New here and want to help? Go to [Contributing](#contributing). You can run the 
 
 ## How it works
 
-1. Open the link and sign in with Google.
-2. Enter an invite code. This is the verification step.
-3. Fill in a profile: nickname, city, a free-form bio, optional WhatsApp/Telegram, and a "visible to others" toggle.
-4. Land on the home screen and pick a city.
-5. Browse the members on the city page and tap one to open a chat with them.
+1. Open the link and sign in with Google. Anyone can join; there are no invite codes.
+2. Fill in a profile: nickname, city, a free-form bio, optional WhatsApp/Telegram, and a "visible to others" toggle.
+3. Land on the home screen and pick a city.
+4. Browse the members on the city page and tap one to open a chat with them.
 
 ### Screens
 
-The MVP has 8 screens. Pick an unchecked one if you want something to build.
+The MVP has 7 screens. Pick an unchecked one if you want something to build.
 
 - [x] Welcome and sign-in
-- [x] Invite code
 - [x] Profile setup
 - [x] Home: list of cities with member counts
 - [x] City page
 - [x] Member profile
 - [ ] Report and block
-- [x] Settings: profile, visibility, contacts, my invites
+- [x] Settings: profile, visibility, contacts
 - [ ] Settings: language, delete account
 
 ### Sketch of the two main screens (example data)
@@ -83,7 +81,7 @@ HOME                          CITY PAGE
 | In the MVP                      | Not in the MVP             |
 | ------------------------------- | -------------------------- |
 | Google sign-in                  | In-app chat                |
-| Invite-based verification       | Feeds, likes, comments     |
+| Open sign-up with Google        | Feeds, likes, comments     |
 | Profiles with free-form bio     | Events and Q&A board       |
 | City list with counts           | Places map                 |
 | City page with members          | Push notifications         |
@@ -94,14 +92,14 @@ HOME                          CITY PAGE
 
 If you want to build something from the right-hand column, open an issue first so we can discuss it.
 
-## Verification and privacy
+## Access and privacy
 
 These rules are enforced in the database with Postgres row-level security (RLS). The UI does not enforce them, so a bug in the frontend cannot leak data.
 
-- **Invites:** The founder issues the first codes. Each verified member gets 3 invites. The app records who invited whom, so if one member turns out to be a bad actor, everyone they brought in can be traced and removed too.
-- **Access:** Unverified users can see nothing except their own profile.
+- **Sign-up:** Open. Anyone who signs in with Google becomes a member straight away (`profiles.verified_at` is set when the account is created).
+- **Access:** Signed-out visitors see nothing but the welcome, privacy and rules pages. A member removed by hand (`verified_at` set back to null) can see nothing except their own profile.
 - **Visibility:** The app only ever shows a member's city, never a more exact location. Real names are optional.
-- **Contact details:** Stored in a separate table. Only verified members can see them, and only for people who chose to share them.
+- **Contact details:** Stored in a separate table. Only members can see them, and only for people who chose to share them.
 - **Rules:** No political content. Every profile has report and block buttons. Members can fully delete their account from inside the app.
 
 ## Tech stack
@@ -120,18 +118,15 @@ All of the schema lives in [`supabase/migrations/`](supabase/migrations/).
 
 | Table      | What it holds                                                               |
 | ---------- | --------------------------------------------------------------------------- |
-| `profiles` | One row per user: nickname, city, bio, visibility, language, verification   |
+| `profiles` | One row per user: nickname, city, bio, visibility, language, member since   |
 | `contacts` | WhatsApp/Telegram details, kept separate so they get their own access rules |
 | `cities`   | Cities with English and Turkmen names and an optional group link            |
-| `invites`  | Invite codes: who created each one and who used it                          |
 | `blocks`   | Who blocked whom. Blocks hide members in both directions                    |
 | `reports`  | Reports on members, reviewed by the founder                                 |
 
-There is one function the app calls: **`redeem_invite(code)`**. In a single transaction, it checks that the code exists and is unused, marks it used, marks the user as verified, and gives them 3 invite codes of their own. Call it from the app with `supabase.rpc("redeem_invite", { invite_code })`. It fails with `Invalid invite code`, `Invite code already used` or `Already verified`.
-
 The home page reads member counts from the **`city_member_counts`** view. It runs under the viewer's RLS (`security_invoker`), so each count matches what that viewer sees on the city page: hidden and blocked members aren't counted.
 
-A new profile row is created automatically when someone signs up for the first time (this is done by a database trigger).
+A new profile row is created automatically when someone signs up for the first time, with `verified_at` already set (this is done by a database trigger).
 
 ---
 
@@ -219,9 +214,9 @@ Google is the only way to sign in, so you need your own Google OAuth client for 
 
 ### 6. Add test data
 
-Because the app is invite-only, a fresh database has no way in. [`supabase/seed.sql`](supabase/seed.sql) adds three cities and three founder codes (`LOCALDEV01`, `LOCALDEV02`, `LOCALDEV03`). `supabase start` loads it the first time. To reload it later, run `npx supabase db reset` (this wipes local data).
+[`supabase/seed.sql`](supabase/seed.sql) adds three cities, so onboarding has something to pick. `supabase start` loads it the first time. To reload it later, run `npx supabase db reset` (this wipes local data).
 
-Once you sign in, redeem one of the founder codes. That marks you as verified, and you get 3 new codes under **Settings → My invites**. Use one to verify a second Google account, so you can test what one member sees of another.
+Sign in with a second Google account too, so you can test what one member sees of another.
 
 ### 7. Run the app
 
@@ -280,17 +275,17 @@ The language comes from the `NEXT_LOCALE` cookie, set by the switch on the sign-
 
 ### Database tests
 
-[`supabase/tests/rls.test.sql`](supabase/tests/rls.test.sql) checks the access rules with [pgTAP](https://pgtap.org). It signs in as different users the way the API does: it switches to the `authenticated` role and sets the JWT claims. It covers unverified users being locked out, what verified members can see, contacts staying hidden unless shared, blocks, and invite codes working exactly once. It runs in a transaction that is rolled back, so it leaves your data alone.
+[`supabase/tests/rls.test.sql`](supabase/tests/rls.test.sql) checks the access rules with [pgTAP](https://pgtap.org). It signs in as different users the way the API does: it switches to the `authenticated` role and sets the JWT claims. It covers new accounts becoming members, removed members being locked out, what members can see, contacts staying hidden unless shared, blocks, admin powers and account deletion. It runs in a transaction that is rolled back, so it leaves your data alone.
 
 ```bash
 npx supabase test db
 ```
 
-If you change an RLS policy or `redeem_invite`, add a test for it.
+If you change an RLS policy or a database function, add a test for it.
 
 ### Pull requests
 
-1. Create a branch from `main`, for example `feat/city-page` or `fix/invite-error`.
+1. Create a branch from `main`, for example `feat/city-page` or `fix/city-count`.
 2. Keep each PR focused on one screen or one change.
 3. Before pushing, check that `npm run lint` and `npm run build` both pass.
 4. In the PR description, explain what changed. If you changed the UI, add a screenshot taken at mobile width.
@@ -309,11 +304,10 @@ app/                    Next.js App Router pages and routes
   [locale]/             Every page, once per language (tk, en). The locale never shows in the URL;
                         the proxy rewrites /city/x to /tk/city/x internally (see i18n/routing.ts)
     welcome/            Welcome and sign-in page, with a language switch
-    invite/             Invite code screen (logged-in, unverified users)
-    onboarding/         Profile setup screen (verified users without nickname/city)
+    onboarding/         Profile setup screen (signed-in users without nickname/city)
     city/[slug]/        City page: members, "new this week", city group link
     member/[id]/        Member profile: WhatsApp/Telegram buttons, Report and Block
-    settings/           Profile, contacts, language, "My invites", sign out, delete account
+    settings/           Profile, contacts, language, sign out, delete account
     privacy/, rules/    Public plain-language pages, readable without signing in
     [...missing]/       Unknown paths, sent to the translated not-found page
   auth/callback/        OAuth callback: exchanges Google's code for a session
@@ -327,14 +321,13 @@ lib/supabase/
   server.ts             Supabase client for Server Components, Route Handlers, Server Actions
   proxy.ts              Session refresh logic used by the root proxy
 proxy.ts                Next.js 16 "proxy" (used to be middleware): refreshes the session on every request
-                        and routes users: logged out → /welcome, unverified → /invite,
-                        no nickname/city → /onboarding. A shared /city or /member link opened on
+                        and routes users: logged out → /welcome, no nickname/city → /onboarding. A shared /city or /member link opened on
                         the way is remembered (lib/return-to.ts) and opened once setup is done
 supabase/
   config.toml           Local Supabase configuration
   migrations/           The database schema, one SQL file per change
-  seed.sql              Local test data: cities and founder invite codes
-  tests/                pgTAP tests for RLS and invites
+  seed.sql              Local test data: cities
+  tests/                pgTAP tests for RLS and database functions
 types/database.ts       Generated TypeScript types for the database (don't edit by hand)
 ```
 
@@ -354,8 +347,8 @@ Another Supabase project is running on your machine. Stop it with `npx supabase 
 - Check that the redirect URI in Google Cloud is exactly `http://127.0.0.1:54321/auth/v1/callback`.
 - Make sure you restarted Supabase after editing `config.toml`.
 
-**I signed in but can't see any cities or members**
-That's expected until you redeem an invite code (see step 6). Unverified users can only read their own profile.
+**I signed in but can't see any cities**
+The seed data hasn't been loaded. Run `npx supabase db reset` (see step 6).
 
 **I changed a migration and nothing happened**
 Run `npx supabase db reset` to re-apply all migrations from scratch.
@@ -383,18 +376,15 @@ npx supabase db push        # apply new migrations to production
 npm run gen:types           # regenerate types from the linked project
 ```
 
-### Issuing invite codes
+### Removing a member
 
-Founder codes have no `created_by`. To issue some, run this in the production SQL editor. It uses the same random code generator as member invites and prints the new codes:
+Sign-up is open, so removing someone means locking their account rather than taking back a code. In the production SQL editor:
 
 ```sql
-insert into public.invites (code, created_by)
-select private.generate_invite_code(), null
-from generate_series(1, 5)
-returning code;
+update public.profiles set verified_at = null where id = '<member id>';
 ```
 
-If you write codes by hand instead, use only uppercase letters and digits, because `redeem_invite` converts whatever the user types to uppercase before checking it.
+They disappear from every list and can't read anything but their own profile. Signing in again doesn't undo it: only new accounts are verified automatically. Set `verified_at = now()` to let them back in.
 
 ### Reviewing reports
 

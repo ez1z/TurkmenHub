@@ -1,4 +1,4 @@
-import { CircleAlert, Eye, Info, MessageCircle, ShieldCheck } from "lucide-react";
+import { CircleAlert, Eye, Info, MessageCircle, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -43,7 +43,7 @@ async function Notice({
 }
 
 const POINTS = [
-  { key: "inviteOnly", Icon: ShieldCheck },
+  { key: "open", Icon: UserPlus },
   { key: "privacy", Icon: Eye },
   { key: "chat", Icon: MessageCircle },
 ] as const;

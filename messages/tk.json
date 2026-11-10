@@ -13,9 +13,6 @@
     "rules": "Düzgünler",
     "privacy": "Gizlinlik"
   },
-  "flow": {
-    "step": "Ädim {current}/{total}"
-  },
   "language": {
     "label": "Dil"
   },
@@ -34,9 +31,9 @@
     "joinGroup": "Şäher toparyna goşulyň",
     "newThisWeek": "Şu hepde goşulanlar",
     "members": "Agzalar",
-    "empty": "Bu ýerde entek agza ýok. {city} şäherinde tanaýan adamyňyzy çagyryň.",
-    "onlyYou": "Häzirlikçe {city} şäherinde diňe siz bar. Tanaýan adamyňyzy çagyryň.",
-    "inviteSomeone": "Çakylyk kodlaryňyza serediň"
+    "empty": "Bu ýerde entek agza ýok. Bu sahypany {city} şäherinde tanaýan adamyňyz bilen paýlaşyň.",
+    "onlyYou": "Häzirlikçe {city} şäherinde diňe siz bar. Bu sahypany tanaýan adamyňyz bilen paýlaşyň.",
+    "copyLinkLabel": "{city} sahypasynyň salgysyny göçüriň"
   },
   "member": {
     "fallbackName": "Agza",
@@ -44,9 +41,9 @@
     "noContacts": "{nickname} habarlaşmak üçin maglumat paýlaşmady.",
     "self": {
       "hidden": "Bu siziň profiliňiz. Ol beýleki agzalardan gizlenen.",
-      "visibleShared": "Bu siziň profiliňiz. Tassyklanan agzalar ony görüp, size ýazyp bilerler.",
-      "visibleNotShared": "Bu siziň profiliňiz. Tassyklanan agzalar ony görýärler, ýöne habarlaşmak maglumatlaryňyz paýlaşylmaýar.",
-      "visibleNoContacts": "Bu siziň profiliňiz. Tassyklanan agzalar ony görýärler, ýöne siz WhatsApp ýa-da Telegram goşmadyňyz.",
+      "visibleShared": "Bu siziň profiliňiz. Agzalar ony görüp, size ýazyp bilerler.",
+      "visibleNotShared": "Bu siziň profiliňiz. Agzalar ony görýärler, ýöne habarlaşmak maglumatlaryňyz paýlaşylmaýar.",
+      "visibleNoContacts": "Bu siziň profiliňiz. Agzalar ony görýärler, ýöne siz WhatsApp ýa-da Telegram goşmadyňyz.",
       "edit": "Sazlamalarda üýtgediň"
     }
   },
@@ -83,10 +80,6 @@
     "generic": "Näsazlyk ýüze çykdy. Täzeden synanyşyň.",
     "reasonRequired": "Sebäbini saýlaň.",
     "detailsTooLong": "Jikme-jiklikler 1000 harpdan köp bolmasyn.",
-    "codeRequired": "Çakylyk koduňyzy giriziň.",
-    "codeInvalid": "Beýle kod tapylmady. Ýalňyş ýazylmandygyny barlaň we täzeden synanyşyň.",
-    "codeUnusable": "Bu kody ulanyp bolmady. Ýalňyş ýazylmandygyny barlaň, eger eýýäm ulanylan bolsa, täze kod soraň.",
-    "codeUsed": "Bu kod eýýäm ulanyldy. Her kod diňe bir gezek işleýär, şonuň üçin täze kod soraň.",
     "confirmRequired": "Tassyklamak üçin bellik goýuň.",
     "nicknameMin": "Lakam azyndan 2 harpdan ybarat bolmaly.",
     "nicknameMax": "Lakam 30 harpdan köp bolmaly däl.",
@@ -111,25 +104,17 @@
   },
   "welcome": {
     "tagline": "Täze şäherde öz adamlaryňyzy tapyň.",
-    "intro": "TurkmenHub daşary ýurtdaky türkmenlere öz şäherlerinde biri-birini tapmaga kömek edýär. Oňa diňe çakylyk bilen girip bolýar.",
+    "intro": "TurkmenHub daşary ýurtdaky türkmenlere öz şäherlerinde biri-birini tapmaga kömek edýär.",
     "oauthError": "Girip bolmady. Täzeden synanyşyň.",
     "deleted": "Hasabyňyz we ondaky ähli maglumatlar pozuldy.",
     "sessionExpired": "Sessiýaňyzyň möhleti gutardy, şonuň üçin ulgamdan çykaryldyňyz. Dowam etmek üçin täzeden giriň.",
     "redirecting": "Geçirilýär…",
     "continueWithGoogle": "Google bilen dowam ediň",
     "points": {
-      "inviteOnly": "Her agza ony tanaýan biriniň çakylyk kody bilen goşulýar.",
+      "open": "Hemme kes goşulyp bilýär. Google bilen girmek ýeterlik.",
       "privacy": "Sizi kimiň görüp, kimiň size ýazyp biljegini özüňiz saýlaýarsyňyz.",
       "chat": "Agzalara WhatsApp ýa-da Telegram arkaly ýazyň."
     }
-  },
-  "invite": {
-    "title": "Çakylyk koduňyzy giriziň",
-    "intro": "TurkmenHub-a diňe çakylyk bilen girip bolýar. Agzalaryň birinden kod soraň.",
-    "codeLabel": "Çakylyk kody",
-    "checking": "Barlanýar…",
-    "continue": "Dowam ediň",
-    "signOut": "Ulgamdan çykyň"
   },
   "onboarding": {
     "title": "Profiliňizi dolduryň",
@@ -145,14 +130,14 @@
     "bioPlaceholder": "UM-da okaýaryn, täze gelenlere kömek etmäge taýyn.",
     "bioHint": "500 harpa çenli.",
     "visible": "Beýleki agzalara görünmek",
-    "visibleHint": "Tassyklanan agzalar sizi şäheriňiziň sahypasynda tapyp bilerler. Diňe şäheriňiz görkezilýär, takyk ýeriňiz hiç haçan görkezilmeýär.",
+    "visibleHint": "Agzalar sizi şäheriňiziň sahypasynda tapyp bilerler. Diňe şäheriňiz görkezilýär, takyk ýeriňiz hiç haçan görkezilmeýär.",
     "contacts": "Habarlaşmak üçin",
     "whatsapp": "WhatsApp belgisi",
     "whatsappHint": "Ilki ýurt kody, meselem, Malaýziýa üçin 60.",
     "telegram": "Telegram ulanyjy ady",
     "telegramPlaceholder": "ulanyjy_ady",
-    "share": "Tassyklanan agzalar bilen paýlaşmak",
-    "shareHint": "Profiliňizi görüp bilýän tassyklanan agzalar size ýazyp bilerler.",
+    "share": "Agzalar bilen paýlaşmak",
+    "shareHint": "Profiliňizi görüp bilýän agzalar size ýazyp bilerler.",
     "saving": "Ýatda saklanýar…",
     "continue": "Dowam ediň",
     "save": "Üýtgeşmeleri ýatda saklaň",
@@ -164,20 +149,15 @@
     "listLabel": "Şäherler",
     "noMatch": "“{query}” boýunça şäher tapylmady."
   },
-  "invites": {
-    "none": "Sizde çakylyk kody ýok.",
-    "left": "{total} koddan {left} sanysy galdy. Her kod bir adamy tassyklaýar, şonuň üçin ony diňe tanaýan adamyňyz bilen paýlaşyň.",
-    "used": "Ulanyldy",
-    "copyLabel": "{code} çakylyk koduny göçüriň",
-    "copied": "Göçürildi",
-    "copy": "Göçüriň"
+  "copyLink": {
+    "copy": "Salgyny göçüriň",
+    "copied": "Göçürildi"
   },
   "settings": {
     "home": "Baş sahypa",
     "title": "Sazlamalar",
     "intro": "Profiliňizi üýtgediň we sizi kimiň görüp, kimiň size ýazyp biljekdigini saýlaň.",
     "language": "Dil",
-    "invites": "Çakylyklarym",
     "account": "Hasap",
     "signOut": "Ulgamdan çykyň",
     "admin": "Admin",
@@ -186,7 +166,7 @@
   "account": {
     "delete": "Hasaby pozuň",
     "deleteTitle": "Hasabyňyz pozulsynmy?",
-    "deleteBody": "Bu siziň profiliňizi, habarlaşmak maglumatlaryňyzy, bloklaryňyzy, çakylyk kodlaryňyzy we giriş ýazgylaryňyzy derrew pozar. Muny yza gaýtaryp bolmaýar.",
+    "deleteBody": "Bu siziň profiliňizi, habarlaşmak maglumatlaryňyzy, bloklaryňyzy we giriş ýazgylaryňyzy derrew pozar. Muny yza gaýtaryp bolmaýar.",
     "deleteKept": "Iberen şikaýatlaryňyz adyňyz görkezilmezden saklanýar, şeýlelikde topar olar boýunça çäre görüp biler.",
     "deleteConfirm": "Hasabymyň we maglumatlarymyň hemişelik pozuljakdygyna düşünýärin.",
     "deleting": "Pozulýar…",
@@ -195,23 +175,22 @@
   },
   "privacy": {
     "title": "Gizlinlik",
-    "intro": "TurkmenHub diňe çakylyk bilen girilýän kiçi sanawdyr. Bu ýerde onuň nämäni saklaýandygy, muny kimiň görýändigi we nädip pozup boljakdygy düşündirilýär.",
-    "updated": "Soňky gezek 2026-njy ýylyň 4-nji noýabrynda täzelendi.",
+    "intro": "TurkmenHub daşary ýurtdaky türkmenler üçin kiçi sanawdyr. Bu ýerde onuň nämäni saklaýandygy, muny kimiň görýändigi we nädip pozup boljakdygy düşündirilýär.",
+    "updated": "Soňky gezek 2026-njy ýylyň 10-njy noýabrynda täzelendi.",
     "stored": {
       "title": "Näme saklanýar",
       "items": [
         "Google e-poçta salgyňyz we hasap belgiňiz, diňe sizi ulgama girizmek üçin. Google-daky adyňyz we suratyňyz saklanmaýar.",
         "Profiliňiz: lakamyňyz, şäheriňiz, özüňiz barada ýazanyňyz we profiliňiziň görünýändigi ýa-da görünmeýändigi.",
         "Goşan bolsaňyz, WhatsApp belgiňiz we Telegram ulanyjy adyňyz, şeýle hem olary paýlaşýandygyňyz ýa-da paýlaşmaýandygyňyz.",
-        "Saýlan diliňiz, sizi kimiň çagyrandygy we çakylyk kodlaryňyz.",
-        "Bloklan agzalaryňyz we iberen şikaýatlaryňyz."
+        "Saýlan diliňiz, bloklan agzalaryňyz we iberen şikaýatlaryňyz."
       ]
     },
     "seen": {
       "title": "Kim görýär",
       "items": [
-        "Diňe tassyklanan agzalar, ýagny çakylyk kody bilen goşulan adamlar, bir zat görüp bilýär. Hiç zat hemmä açyk däl.",
-        "Profiliňiz görünýän bolsa, tassyklanan agzalar lakamyňyzy, şäheriňizi we özüňiz barada ýazanyňyzy görüp bilýärler. Sazlamalarda görünmegi öçürseňiz, ähli sanawlardan ýitýärsiňiz.",
+        "Diňe agzalar, ýagny TurkmenHub-a giren adamlar, bir zat görüp bilýär. Hiç zat hemmä açyk däl.",
+        "Profiliňiz görünýän bolsa, agzalar lakamyňyzy, şäheriňizi we özüňiz barada ýazanyňyzy görüp bilýärler. Sazlamalarda görünmegi öçürseňiz, ähli sanawlardan ýitýärsiňiz.",
         "WhatsApp we Telegram diňe paýlaşmagy açsaňyz görkezilýär, onda-da diňe profiliňizi görüp bilýän agzalara.",
         "E-poçta salgyňyz beýleki agzalara hiç haçan görkezilmeýär.",
         "Bloklamak iki tarapa-da täsir edýär: siz biri-biriňizi görmeýärsiňiz, oňa bolsa habar berilmeýär.",
@@ -230,15 +209,15 @@
       "title": "Maglumatlaryňyzy pozmak",
       "items": [
         "Islän wagtyňyz Sazlamalarda islendik zady üýtgedip ýa-da aýryp bilersiňiz.",
-        "Sazlamalar → Hasaby pozuň hasabyňyzy derrew pozýar: profiliňizi, habarlaşmak maglumatlaryňyzy, bloklaryňyzy, çakylyk kodlaryňyzy we giriş ýazgylaryňyzy.",
-        "Iberen şikaýatlaryňyz adyňyz görkezilmezden saklanýar. Ulanan çakylyk koduňyz ulanylan hökmünde galýar, şonuň üçin ony hiç kim gaýtadan ulanyp bilmez."
+        "Sazlamalar → Hasaby pozuň hasabyňyzy derrew pozýar: profiliňizi, habarlaşmak maglumatlaryňyzy, bloklaryňyzy we giriş ýazgylaryňyzy.",
+        "Iberen şikaýatlaryňyz adyňyz görkezilmezden saklanýar."
       ]
     }
   },
   "rules": {
     "title": "Jemgyýet düzgünleri",
     "intro": "TurkmenHub daşary ýurtdaky türkmenleriň biri-birini tapmagy we biri-birine kömek etmegi üçin döredildi. Bu düzgünler ony hemmeler üçin howpsuz saklaýar.",
-    "updated": "Soňky gezek 2026-njy ýylyň 4-nji noýabrynda täzelendi.",
+    "updated": "Soňky gezek 2026-njy ýylyň 10-njy noýabrynda täzelendi.",
     "political": {
       "title": "Syýasy mazmun gadagan",
       "items": [
@@ -256,9 +235,8 @@
       ]
     },
     "safety": {
-      "title": "Çakylyklar we şikaýatlar",
+      "title": "Şikaýatlar",
       "items": [
-        "Çakylyk kodlaryňyzy diňe tanaýan we ynanýan adamlaryňyza beriň. Kimi çagyrýandygyňyz üçin siz jogapkär.",
         "Kimdir biri bu düzgünleri bozsa, onuň profilini açyň we «Şikaýat ediň» düwmesine basyň. Islendik adamy islän wagtyňyz bloklap bilersiňiz.",
         "Düzgünleri bozan agzalar TurkmenHub-a girip bilmezler."
       ]

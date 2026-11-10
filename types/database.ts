@@ -135,52 +135,12 @@ export type Database = {
           },
         ]
       }
-      invites: {
-        Row: {
-          code: string
-          created_at: string
-          created_by: string | null
-          used_at: string | null
-          used_by: string | null
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          created_by?: string | null
-          used_at?: string | null
-          used_by?: string | null
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          created_by?: string | null
-          used_at?: string | null
-          used_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invites_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invites_used_by_fkey"
-            columns: ["used_by"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           bio: string | null
           city_id: number | null
           created_at: string
           id: string
-          invited_by: string | null
           is_visible: boolean
           locale: string
           nickname: string | null
@@ -192,7 +152,6 @@ export type Database = {
           city_id?: number | null
           created_at?: string
           id: string
-          invited_by?: string | null
           is_visible?: boolean
           locale?: string
           nickname?: string | null
@@ -204,7 +163,6 @@ export type Database = {
           city_id?: number | null
           created_at?: string
           id?: string
-          invited_by?: string | null
           is_visible?: boolean
           locale?: string
           nickname?: string | null
@@ -217,13 +175,6 @@ export type Database = {
             columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "cities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -305,7 +256,6 @@ export type Database = {
         Returns: undefined
       }
       my_admin_role: { Args: never; Returns: string }
-      redeem_invite: { Args: { invite_code: string }; Returns: undefined }
       set_admin: {
         Args: { make_admin: boolean; member: string }
         Returns: undefined

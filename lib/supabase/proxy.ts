@@ -17,9 +17,8 @@ const handleI18nRouting = createMiddleware(routing);
 
 // The steps a user goes through before they can use the app, in order.
 const WELCOME = "/welcome";
-const INVITE = "/invite";
 const ONBOARDING = "/onboarding";
-const STEPS = [WELCOME, INVITE, ONBOARDING];
+const STEPS = [WELCOME, ONBOARDING];
 
 // Readable by anyone, signed in or not, at any step.
 const PUBLIC_PAGES = ["/privacy", "/rules"];
@@ -99,9 +98,9 @@ async function pageExists(
 // Refreshes the Supabase auth session and forwards the updated cookies to
 // both Server Components (via the request) and the browser (via the response).
 // Then routes the user to the step they're on: logged-out users to /welcome,
-// unverified users to /invite, and users without a finished profile to
-// /onboarding. A shared city or member link opened on the way is remembered
-// in a cookie. This is only for navigation; RLS is what protects the data.
+// and users without a finished profile to /onboarding. A shared city or
+// member link opened on the way is remembered in a cookie. This is only for
+// navigation; RLS is what protects the data.
 // Requests that go through are handed to next-intl to pick the language.
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -191,24 +190,19 @@ export async function updateSession(request: NextRequest) {
   if (userId) {
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("verified_at, nickname, city_id")
+      .select("nickname, city_id")
       .eq("id", userId)
       .maybeSingle();
 
-    // Don't bounce verified members to /invite because of a network blip.
-    // RLS still keeps an unverified user from reading anything.
+    // Don't bounce members to /onboarding because of a network blip.
     if (error) {
       return supabaseResponse;
     }
 
-    if (!profile?.verified_at) {
-      step = INVITE;
-    } else if (!profile.nickname || profile.city_id === null) {
-      // Nickname and city are the required profile fields.
-      step = ONBOARDING;
-    } else {
-      step = null;
-    }
+    // Nickname and city are the required profile fields. Everyone who signs
+    // in is a member; one removed by hand (verified_at null) gets through
+    // here but RLS shows them nothing.
+    step = !profile?.nickname || profile.city_id === null ? ONBOARDING : null;
   }
 
   if (step && pathname !== step) {
