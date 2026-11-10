@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
+import { isAdmin } from "@/lib/admin";
 import {
   isReturnPath,
   RETURN_TO_COOKIE,
@@ -47,11 +48,12 @@ function hasSessionCookie(request: NextRequest) {
 
 const CITY_PAGE = /^\/city\/([^/]+)$/;
 const MEMBER_PAGE = /^\/member\/([^/]+)$/;
+const ADMIN_PAGE = "/admin";
 // Anything else can't match a row, so it's not found without a query.
 const SLUG = /^[a-z0-9-]+$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Whether a city or member page has anything to show this viewer. Same RLS
+// Whether a city, member or admin page has anything to show this viewer. Same RLS
 // as the page itself, so a hidden or blocked member is missing here too.
 // Other paths always count as existing; on a lookup error, let the page
 // decide.
@@ -70,6 +72,11 @@ async function pageExists(
       .eq("slug", city[1])
       .maybeSingle();
     return Boolean(data) || Boolean(error);
+  }
+
+  // Members who aren't admins get a 404, not a page they can't use.
+  if (pathname === ADMIN_PAGE) {
+    return isAdmin(supabase).catch(() => true);
   }
 
   const member = MEMBER_PAGE.exec(pathname);

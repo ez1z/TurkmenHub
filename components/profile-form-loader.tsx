@@ -1,4 +1,6 @@
+import { getLocale } from "next-intl/server";
 import ProfileForm from "@/components/profile-form";
+import { countryName } from "@/lib/country-name";
 import { createClient } from "@/lib/supabase/server";
 
 // Loads the cities and the member's saved profile and contacts, then renders
@@ -12,8 +14,9 @@ export default async function ProfileFormLoader({
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims.sub ?? "";
 
-  const [{ data: cities }, { data: profile }, { data: contacts }] =
+  const [locale, { data: cities }, { data: profile }, { data: contacts }] =
     await Promise.all([
+      getLocale(),
       supabase
         .from("cities")
         .select("id, name_en, name_tk, country_code")
@@ -35,7 +38,10 @@ export default async function ProfileFormLoader({
   return (
     <ProfileForm
       mode={mode}
-      cities={cities ?? []}
+      cities={(cities ?? []).map(({ country_code, ...city }) => ({
+        ...city,
+        country: countryName(country_code, locale),
+      }))}
       initialValues={{
         nickname: profile?.nickname ?? "",
         city_id: profile?.city_id?.toString() ?? "",

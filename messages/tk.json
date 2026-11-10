@@ -95,7 +95,16 @@
     "bioMax": "Bu tekst 500 harpdan köp bolmaly däl.",
     "whatsappLeadingZero": "0 bilen däl-de, ýurt kody bilen başlaň.",
     "whatsappInvalid": "Doly belgiňizi ýurt kody bilen giriziň.",
-    "telegramInvalid": "5–32 harp, san ýa-da aşaky çyzyk ulanyň."
+    "telegramInvalid": "5–32 harp, san ýa-da aşaky çyzyk ulanyň.",
+    "notAllowed": "Muny diňe adminler edip bilýär.",
+    "cityHasMembers": "Bu şäherde entek agzalar ýaşaýar. Ony başga şäher bilen birleşdiriň.",
+    "mergeTargetRequired": "Agzalaryň geçjek şäherini saýlaň.",
+    "cityNameRequired": "Şäheriň adyny giriziň.",
+    "cityNameMax": "At 60 harpdan köp bolmaly däl.",
+    "slugInvalid": "Kiçi harplary, sanlary we defisi ulanyň, meselem, kuala-lumpur.",
+    "slugTaken": "Bu salgyny başga şäher ulanýar. Başgasyny saýlaň.",
+    "countryRequired": "Ýurdy saýlaň.",
+    "groupUrlInvalid": "https:// bilen başlaýan doly salgyny giriziň."
   },
   "welcome": {
     "tagline": "Täze şäherde öz adamlaryňyzy tapyň.",
@@ -167,7 +176,9 @@
     "language": "Dil",
     "invites": "Çakylyklarym",
     "account": "Hasap",
-    "signOut": "Ulgamdan çykyň"
+    "signOut": "Ulgamdan çykyň",
+    "admin": "Admin",
+    "adminLink": "Ýurtlar we şäherler"
   },
   "account": {
     "delete": "Hasaby pozuň",
@@ -262,5 +273,52 @@
     "offlineBody": "Baglanyşygyňyzy barlaň. Internet dikelende sahypa açylar.",
     "retry": "Täzeden synanyşyň",
     "home": "Baş sahypa"
+  },
+  "admin": {
+    "settings": "Sazlamalar",
+    "title": "Ýurtlar we şäherler",
+    "intro": "Agzalaryň saýlap bilýän şäherlerini goşuň we üýtgediň. Agzalaryň öz profillerini bu ýerde üýtgedip bolmaýar.",
+    "addCountry": "Ýurt goşuň",
+    "addCountryTitle": "Ýurt goşuň",
+    "addCountryHint": "Ýurt şäheri bolanda görünýär, şonuň üçin onuň ilkinji şäherini şu ýerde goşuň.",
+    "addCityIn": "Şäher goşuň: {country}",
+    "editCity": "Şäheri üýtgediň: {city}",
+    "edit": "Üýtget",
+    "cityCount": "{count} şäher",
+    "memberCount": "{count, plural, =0 {Agza ýok} other {{count} agza}}",
+    "empty": "Entek şäher ýok. Başlamak üçin ýurt goşuň.",
+    "form": {
+      "country": "Ýurt",
+      "chooseCountry": "Ýurdy saýlaň",
+      "nameEn": "Iňlisçe ady",
+      "nameTk": "Türkmençe ady",
+      "nameTkHint": "Agzalaryň ýazyşy ýaly, meselem, Istanbul üçin Stambul.",
+      "slug": "Salgy",
+      "slugHint": "Şäheriň sahypasy /city/{slug} salgyda bolar.",
+      "slugWarning": "Üýtgetseňiz, öň paýlaşylan salgylar işlemez.",
+      "groupUrl": "Şäher toparynyň salgysy",
+      "groupUrlHint": "WhatsApp ýa-da Telegram toparyna çakylyk salgysy.",
+      "optional": "(hökmany däl)",
+      "add": "Şäher goşuň",
+      "adding": "Goşulýar…",
+      "save": "Üýtgeşmeleri ýatda saklaň",
+      "saving": "Ýatda saklanýar…",
+      "cancel": "Ýatyryň"
+    },
+    "remove": {
+      "delete": "Bu şäheri pozuň",
+      "merge": "Başga şäher bilen birleşdiriň",
+      "back": "Yza",
+      "deleteTitle": "{city} pozulsynmy?",
+      "deleteBody": "{city} şäherinde hiç kim ýaşamaýar, şonuň üçin ony pozup bolýar. Agzalar ony şäher sanawynda indi görmezler.",
+      "deleteConfirm": "Şäheri pozuň",
+      "deleting": "Pozulýar…",
+      "mergeTitle": "Şäherleri birleşdiriň: {city}",
+      "mergeBody": "{city} şäherinde {count} agza ýaşaýar. Olar siziň saýlan şäheriňize geçiriler we {city} aýrylar. Muny yza gaýtaryp bolmaýar.",
+      "mergeInto": "Agzalary geçirmeli şäher",
+      "chooseCity": "Şäheri saýlaň",
+      "mergeConfirm": "Birleşdiriň we aýryň",
+      "merging": "Birleşdirilýär…"
+    }
   }
 }

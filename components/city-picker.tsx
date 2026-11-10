@@ -4,13 +4,15 @@ import { Check, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useRef, useState } from "react";
 import { cityName } from "@/lib/city-name";
-import { countryName } from "@/lib/country-name";
 
 export type City = {
   id: number;
   name_en: string;
   name_tk: string;
-  country_code: string;
+  // The country's name in the page language. Worked out on the server, whose
+  // ICU data has Turkmen names; many browsers' don't, which would show
+  // "Germany" on a Turkmen page and break hydration.
+  country: string;
 };
 
 const popupClass =
@@ -181,7 +183,7 @@ export default function CityPicker({
                 {label(city)}
               </span>
               <span className="truncate text-xs text-ink-muted">
-                {countryName(city.country_code, locale)}
+                {city.country}
               </span>
             </span>
             {city.id === selected?.id && (

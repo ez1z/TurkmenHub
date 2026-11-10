@@ -19,7 +19,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(38);
+select plan(58);
 
 -------------------------------------------------------------------------------
 -- Fixtures
@@ -239,6 +239,135 @@ select throws_ok(
 );
 
 -------------------------------------------------------------------------------
+-- Admins manage cities; members can't, and can't make themselves admins
+-------------------------------------------------------------------------------
+
+-- Bob is an admin. Carol (hidden) moves to a duplicate city, to be merged
+-- back into test-city.
+reset role;
+insert into public.admins (profile_id) values ('b0000000-0000-0000-0000-000000000000');
+insert into public.cities (slug, name_en, name_tk, country_code)
+values ('test-dup', 'Test Dup', 'Test Dup', 'MY');
+update public.profiles
+set city_id = (select id from public.cities where slug = 'test-dup')
+where id = 'c0000000-0000-0000-0000-000000000000';
+set local role authenticated;
+
+set local request.jwt.claims to '{"sub":"a0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+
+select throws_ok(
+  $$ insert into public.cities (slug, name_en, name_tk, country_code)
+     values ('test-new', 'Test New', 'Test New', 'MY') $$,
+  '42501', null,
+  'a member cannot add a city'
+);
+select is_empty(
+  $$ with changed as (
+       update public.cities set name_en = 'Renamed' where slug = 'test-city' returning 1
+     ) select * from changed $$,
+  'a member cannot edit a city'
+);
+select is_empty(
+  $$ with deleted as (
+       delete from public.cities where slug = 'test-dup' returning 1
+     ) select * from deleted $$,
+  'a member cannot delete a city'
+);
+select is_empty('select * from public.admin_cities()', 'a member gets no admin city list');
+select throws_ok(
+  $$ select public.merge_cities(
+       (select id from public.cities where slug = 'test-dup'),
+       (select id from public.cities where slug = 'test-city')) $$,
+  '42501', 'Not allowed',
+  'a member cannot merge cities'
+);
+select throws_ok(
+  $$ insert into public.admins (profile_id) values ('a0000000-0000-0000-0000-000000000000') $$,
+  '42501', null,
+  'a member cannot make themselves an admin'
+);
+select is_empty('select 1 from public.admins', 'a member cannot see who the admins are');
+
+set local request.jwt.claims to '{"sub":"b0000000-0000-0000-0000-000000000000","role":"authenticated"}';
+
+select results_eq(
+  'select profile_id from public.admins',
+  $$ values ('b0000000-0000-0000-0000-000000000000'::uuid) $$,
+  'an admin can read their own admin row'
+);
+select lives_ok(
+  $$ insert into public.cities (slug, name_en, name_tk, country_code)
+     values ('test-new', 'Test New', 'Test Täze', 'TR') $$,
+  'an admin can add a city'
+);
+select results_eq(
+  $$ with changed as (
+       update public.cities set name_en = 'Test Newer', group_url = 'https://t.me/test'
+       where slug = 'test-new' returning name_en, group_url
+     ) select * from changed $$,
+  $$ values ('Test Newer'::text, 'https://t.me/test'::text) $$,
+  'an admin can edit a city'
+);
+select results_eq(
+  $$ select slug, member_count from public.admin_cities()
+     where slug in ('test-city', 'test-dup', 'test-new') order by slug $$,
+  $$ values ('test-city'::text, 3), ('test-dup', 1), ('test-new', 0) $$,
+  'admin city list counts every member, hidden ones too'
+);
+select throws_ok(
+  $$ delete from public.cities where slug = 'test-dup' $$,
+  '23503', null,
+  'a city someone lives in cannot be deleted'
+);
+select throws_ok(
+  $$ select public.merge_cities(
+       (select id from public.cities where slug = 'test-city'),
+       (select id from public.cities where slug = 'test-city')) $$,
+  'P0001', 'Cannot merge a city into itself',
+  'a city cannot be merged into itself'
+);
+select lives_ok(
+  $$ select public.merge_cities(
+       (select id from public.cities where slug = 'test-dup'),
+       (select id from public.cities where slug = 'test-city')) $$,
+  'an admin can merge cities'
+);
+select results_eq(
+  $$ select slug, member_count from public.admin_cities()
+     where slug in ('test-city', 'test-dup') $$,
+  $$ values ('test-city'::text, 4) $$,
+  'merging moves the members and removes the old city'
+);
+select lives_ok(
+  $$ delete from public.cities where slug = 'test-new' $$,
+  'an admin can delete an empty city'
+);
+select throws_ok(
+  $$ insert into public.admins (profile_id) values ('a0000000-0000-0000-0000-000000000000') $$,
+  '42501', null,
+  'an admin cannot add admins directly'
+);
+
+-- An admin who loses verification loses the role's powers with it.
+reset role;
+update public.profiles set verified_at = null where id = 'b0000000-0000-0000-0000-000000000000';
+set local role authenticated;
+
+select is_empty('select * from public.admin_cities()', 'an unverified admin gets no admin city list');
+
+reset role;
+update public.profiles set verified_at = now() where id = 'b0000000-0000-0000-0000-000000000000';
+
+select throws_ok(
+  $$ insert into public.admins (profile_id, is_superuser) values
+       ('a0000000-0000-0000-0000-000000000000', true),
+       ('f0000000-0000-0000-0000-000000000000', true) $$,
+  '23505', null,
+  'there can be only one superuser'
+);
+set local role authenticated;
+
+-------------------------------------------------------------------------------
 -- delete_account: nothing that points at the member survives
 -------------------------------------------------------------------------------
 
@@ -317,6 +446,11 @@ select throws_ok(
   'select 1 from public.city_member_counts',
   '42501', null,
   'anon cannot read member counts'
+);
+select throws_ok(
+  'select * from public.admin_cities()',
+  '42501', null,
+  'anon cannot call admin_cities'
 );
 select is(public.keep_alive(), 1, 'anon can call keep_alive');
 

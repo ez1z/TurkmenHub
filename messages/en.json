@@ -95,7 +95,16 @@
     "bioMax": "Bio must be 500 characters or fewer.",
     "whatsappLeadingZero": "Start with your country code, not 0.",
     "whatsappInvalid": "Enter your full number with country code.",
-    "telegramInvalid": "Use 5–32 letters, numbers or underscores."
+    "telegramInvalid": "Use 5–32 letters, numbers or underscores.",
+    "notAllowed": "Only admins can do that.",
+    "cityHasMembers": "People still live in this city. Merge it into another city instead.",
+    "mergeTargetRequired": "Choose the city to move members to.",
+    "cityNameRequired": "Enter the city's name.",
+    "cityNameMax": "Keep the name to 60 characters or fewer.",
+    "slugInvalid": "Use lowercase letters, numbers and dashes, like kuala-lumpur.",
+    "slugTaken": "Another city already uses this link. Pick a different one.",
+    "countryRequired": "Choose a country.",
+    "groupUrlInvalid": "Enter a full link starting with https://."
   },
   "welcome": {
     "tagline": "Find your people in a new city.",
@@ -167,7 +176,9 @@
     "language": "Language",
     "invites": "My invites",
     "account": "Account",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "admin": "Admin",
+    "adminLink": "Countries and cities"
   },
   "account": {
     "delete": "Delete account",
@@ -262,5 +273,52 @@
     "offlineBody": "Check your connection. The page will load when you're back online.",
     "retry": "Try again",
     "home": "Go home"
+  },
+  "admin": {
+    "settings": "Settings",
+    "title": "Countries and cities",
+    "intro": "Add and edit the cities members can choose. Members' own profiles can't be changed here.",
+    "addCountry": "Add a country",
+    "addCountryTitle": "Add a country",
+    "addCountryHint": "A country appears once it has a city, so add its first city here.",
+    "addCityIn": "Add a city in {country}",
+    "editCity": "Edit {city}",
+    "edit": "Edit",
+    "cityCount": "{count, plural, one {# city} other {# cities}}",
+    "memberCount": "{count, plural, =0 {No members} one {# member} other {# members}}",
+    "empty": "No cities yet. Add a country to get started.",
+    "form": {
+      "country": "Country",
+      "chooseCountry": "Choose a country",
+      "nameEn": "Name in English",
+      "nameTk": "Name in Turkmen",
+      "nameTkHint": "As members write it, e.g. Stambul for Istanbul.",
+      "slug": "Link",
+      "slugHint": "The city's page will be at /city/{slug}.",
+      "slugWarning": "Changing it breaks links people have already shared.",
+      "groupUrl": "City group link",
+      "groupUrlHint": "A WhatsApp or Telegram group invite link.",
+      "optional": "(optional)",
+      "add": "Add city",
+      "adding": "Adding…",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "remove": {
+      "delete": "Delete this city",
+      "merge": "Merge into another city",
+      "back": "Back",
+      "deleteTitle": "Delete {city}?",
+      "deleteBody": "Nobody lives in {city}, so it can be deleted. Members won't see it in the city list any more.",
+      "deleteConfirm": "Delete city",
+      "deleting": "Deleting…",
+      "mergeTitle": "Merge {city}",
+      "mergeBody": "{count, plural, one {# member lives} other {# members live}} in {city}. They'll be moved to the city you pick, and {city} will be removed. This can't be undone.",
+      "mergeInto": "Move members to",
+      "chooseCity": "Choose a city",
+      "mergeConfirm": "Merge and remove {city}",
+      "merging": "Merging…"
+    }
   }
 }

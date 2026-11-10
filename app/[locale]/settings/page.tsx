@@ -1,5 +1,7 @@
-import { LogOut } from "lucide-react";
+import { ChevronRight, LogOut, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { Suspense } from "react";
 import DeleteAccount from "@/components/delete-account";
 import LanguageSwitcher from "@/components/language-switcher";
@@ -7,6 +9,7 @@ import MyInvites from "@/components/my-invites";
 import PageShell, { BackLink } from "@/components/page-shell";
 import ProfileFormLoader from "@/components/profile-form-loader";
 import { signOut } from "@/lib/account-actions";
+import { isAdmin } from "@/lib/admin";
 import {
   cardClass,
   leadClass,
@@ -14,6 +17,7 @@ import {
   sectionLabelClass,
   skeletonClass,
 } from "@/lib/styles";
+import { createClient } from "@/lib/supabase/server";
 
 // A titled group, like the sections of a phone's settings app.
 function Group({
@@ -34,6 +38,32 @@ function Group({
       </h2>
       <div className={`${cardClass} overflow-hidden`}>{children}</div>
     </section>
+  );
+}
+
+// Shown to admins only. If the check fails, leave it out rather than break
+// the page: the admin page itself is still reachable.
+async function AdminGroup() {
+  const supabase = await createClient();
+  const [t, admin] = await Promise.all([
+    getTranslations("settings"),
+    isAdmin(supabase).catch(() => false),
+  ]);
+  if (!admin) {
+    return null;
+  }
+
+  return (
+    <Group id="admin" title={t("admin")}>
+      <Link
+        href="/admin"
+        className="flex min-h-14 w-full items-center gap-3 px-4 font-medium text-ink transition-colors hover:bg-subtle"
+      >
+        <ShieldCheck aria-hidden="true" className="h-5 w-5 text-ink-muted" />
+        <span className="flex-1">{t("adminLink")}</span>
+        <ChevronRight aria-hidden="true" className="h-4 w-4 text-ink-subtle" />
+      </Link>
+    </Group>
   );
 }
 
@@ -67,6 +97,10 @@ export default function SettingsPage() {
           <MyInvites />
         </Suspense>
       </Group>
+
+      <Suspense fallback={null}>
+        <AdminGroup />
+      </Suspense>
 
       <Group id="account" title={t("account")}>
         <div className="flex flex-col divide-y divide-line">

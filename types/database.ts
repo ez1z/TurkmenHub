@@ -14,6 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          is_superuser: boolean
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          is_superuser?: boolean
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          is_superuser?: boolean
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admins_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -260,8 +286,24 @@ export type Database = {
       }
     }
     Functions: {
+      admin_cities: {
+        Args: never
+        Returns: {
+          country_code: string
+          group_url: string
+          id: number
+          member_count: number
+          name_en: string
+          name_tk: string
+          slug: string
+        }[]
+      }
       delete_account: { Args: never; Returns: undefined }
       keep_alive: { Args: never; Returns: number }
+      merge_cities: {
+        Args: { from_city: number; into_city: number }
+        Returns: undefined
+      }
       redeem_invite: { Args: { invite_code: string }; Returns: undefined }
     }
     Enums: {
